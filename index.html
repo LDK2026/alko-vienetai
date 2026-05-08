@@ -1,145 +1,148 @@
 <!doctype html>
 <html lang="lt">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="format-detection" content="telephone=no">
-  <head>
-   <link rel="manifest" href="/alko-vienetai/manifest.webmanifest">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="format-detection" content="telephone=no">
+  <title>Alko Vienetai</title>
+  <meta name="description" content="Alkoholio vienetų skaičiuoklė ir vartojimo statistika.">
+  <meta name="theme-color" content="#0f5132">
+  <meta name="application-name" content="Alko Vienetai">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Vienetai">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="assets/app-icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
 
-<meta name="theme-color" content="#0f5132">
-<meta name="application-name" content="Alko Vienetai">
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">PWA versija</p>
+        <h1>Alko Vienetai</h1>
+      </div>
 
-<link rel="apple-touch-icon" href="/alko-vienetai/assets/app-icon-192.png">
+      <button class="icon-button" id="shareButton" type="button" aria-label="Dalintis">
+        ↗
+      </button>
+    </header>
 
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Vienetai">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-  </head>
-
-  <body>
-    <div class="app-shell">
-      <header class="topbar">
-        <div>
-          <p class="eyebrow">PWA versija</p>
-          <h1>Alko Vienetai</h1>
-        </div>
-
-        <button class="icon-button" id="shareButton" aria-label="Dalintis">
-          ↗
-        </button>
-      </header>
-
-      <main>
-        <section class="hero-panel">
+    <main>
+      <section class="hero-panel" aria-labelledby="todayTitle">
+        <div class="hero-summary">
           <div>
-            <p class="panel-label">Šiandien</p>
+            <p class="panel-label" id="todayTitle">Šiandien</p>
             <strong id="todayUnits">0.0</strong>
             <span>vienetų</span>
           </div>
-
-          <div class="risk-meter">
-            <div id="riskFill"></div>
+          <div>
+            <p class="panel-label">Šią savaitę</p>
+            <strong id="weekUnits">0.0</strong>
+            <span>vienetų</span>
           </div>
+        </div>
 
-          <p id="riskText" class="muted">
-            Įrašyk pirmą gėrimą.
-          </p>
-        </section>
+        <div class="risk-meter" aria-hidden="true">
+          <div id="riskFill"></div>
+        </div>
 
-        <nav class="tabs">
-          <button class="tab active" data-tab="log">Įrašas</button>
-          <button class="tab" data-tab="stats">Statistika</button>
-          <button class="tab" data-tab="history">Istorija</button>
-          <button class="tab" data-tab="settings">Ribos</button>
-        </nav>
+        <p id="riskText" class="muted">Įrašyk pirmą gėrimą.</p>
+      </section>
 
-        <!-- LOG -->
-        <section class="screen active" id="logScreen">
-          <form id="drinkForm" class="form-panel">
+      <nav class="tabs" aria-label="Programėlės skiltys">
+        <button class="tab active" type="button" data-tab="log" aria-controls="logScreen">Įrašas</button>
+        <button class="tab" type="button" data-tab="stats" aria-controls="statsScreen">Statistika</button>
+        <button class="tab" type="button" data-tab="history" aria-controls="historyScreen">Istorija</button>
+        <button class="tab" type="button" data-tab="settings" aria-controls="settingsScreen">Ribos</button>
+      </nav>
+
+      <section class="screen active" id="logScreen">
+        <form id="drinkForm" class="form-panel">
+          <label>
+            Data
+            <input type="date" id="dateInput" required>
+          </label>
+
+          <div class="drink-grid" id="drinkGrid" aria-label="Gėrimų pasirinkimas"></div>
+
+          <div class="split">
             <label>
-              Data
-              <input type="date" id="dateInput" required />
-            </label>
-
-            <div class="drink-grid" id="drinkGrid"></div>
-
-            <div class="split">
-              <label>
-                Kiekis (ml)
-                <input type="number" id="amountInput" required />
-              </label>
-
-              <label>
-                ABV %
-                <input type="number" id="abvInput" required />
-              </label>
-            </div>
-
-            <div class="calculation-preview">
-              <span id="previewText">Pasirink gėrimą</span>
-              <strong id="previewUnits">0.0 vnt.</strong>
-            </div>
-
-            <button type="submit" class="primary-button">
-              Pridėti
-            </button>
-          </form>
-        </section>
-
-        <!-- STATS -->
-        <section class="screen" id="statsScreen">
-          <div class="summary-grid">
-            <div>
-              <span>Per laikotarpį</span>
-              <strong id="periodUnits">0.0</strong>
-            </div>
-            <div>
-              <span>Gryno alkoholio</span>
-              <strong id="periodGrams">0</strong>
-            </div>
-            <div>
-              <span>Dienos</span>
-              <strong id="periodDays">0</strong>
-            </div>
-          </div>
-
-          <div id="drinkBreakdown"></div>
-        </section>
-
-        <!-- HISTORY -->
-        <section class="screen" id="historyScreen">
-          <div id="historyList"></div>
-        </section>
-
-        <!-- SETTINGS -->
-        <section class="screen" id="settingsScreen">
-          <div class="form-panel">
-            <label>
-              Dienos riba
-              <input type="number" id="dailyLimitInput" />
+              Kiekis (ml)
+              <input type="number" id="amountInput" min="1" step="1" inputmode="numeric" required>
             </label>
 
             <label>
-              Savaitės riba
-              <input type="number" id="weeklyLimitInput" />
+              ABV %
+              <input type="number" id="abvInput" min="0" max="96" step="0.1" inputmode="decimal" required>
             </label>
-
-            <button type="button" id="saveSettingsButton" class="primary-button">
-              Išsaugoti
-            </button>
           </div>
-        </section>
-      </main>
-    </div>
 
-    <template id="drinkCardTemplate">
-      <button class="drink-card">
-        <img />
-        <span></span>
-        <small></small>
-      </button>
-    </template>
+          <div class="calculation-preview" aria-live="polite">
+            <span id="previewText">Pasirink gėrimą</span>
+            <strong id="previewUnits">0.0 vnt.</strong>
+          </div>
 
-    <script src="app.js"></script>
-  </body>
+          <button type="submit" class="primary-button">Pridėti</button>
+        </form>
+      </section>
+
+      <section class="screen" id="statsScreen" hidden>
+        <div class="summary-grid">
+          <div>
+            <span>Per 7 dienas</span>
+            <strong id="periodUnits">0.0</strong>
+          </div>
+          <div>
+            <span>Gryno alkoholio</span>
+            <strong id="periodGrams">0 g</strong>
+          </div>
+          <div>
+            <span>Dienos su įrašais</span>
+            <strong id="periodDays">0</strong>
+          </div>
+        </div>
+
+        <div class="breakdown" id="drinkBreakdown"></div>
+      </section>
+
+      <section class="screen" id="historyScreen" hidden>
+        <div class="section-header">
+          <h2>Istorija</h2>
+          <button class="secondary-button" id="clearHistoryButton" type="button">Išvalyti</button>
+        </div>
+        <div id="historyList"></div>
+      </section>
+
+      <section class="screen" id="settingsScreen" hidden>
+        <div class="form-panel">
+          <label>
+            Dienos riba, vnt.
+            <input type="number" id="dailyLimitInput" min="0.1" step="0.1" inputmode="decimal">
+          </label>
+
+          <label>
+            Savaitės riba, vnt.
+            <input type="number" id="weeklyLimitInput" min="0.1" step="0.1" inputmode="decimal">
+          </label>
+
+          <button type="button" id="saveSettingsButton" class="primary-button">Išsaugoti</button>
+          <p class="muted small">Ribos naudojamos tik tavo įrašų palyginimui šiame įrenginyje.</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <template id="drinkCardTemplate">
+    <button class="drink-card" type="button">
+      <img alt="">
+      <span></span>
+      <small></small>
+    </button>
+  </template>
+
+  <script src="app.js" defer></script>
+</body>
 </html>
