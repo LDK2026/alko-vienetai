@@ -1,0 +1,48 @@
+name: Build Android Debug APK
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Prepare Bubblewrap project
+        run: |
+          mkdir -p android-build
+          cp twa-manifest.json android-build/twa-manifest.json
+
+      - name: Generate Android project
+        run: |
+          docker run --rm \
+            -v "${{ github.workspace }}/android-build:/app" \
+            ghcr.io/googlechromelabs/bubblewrap:latest \
+            update --manifest=/app
+
+      - name: Build debug APK
+        run: |
+          docker run --rm \
+            --entrypoint /bin/bash \
+            -v "${{ github.workspace }}/android-build:/app" \
+            ghcr.io/googlechromelabs/bubblewrap:latest \
+            -lc "cd /app && ./gradlew assembleDebug"
+
+      - name: Collect APK
+        run: |
+          mkdir -p apk-output
+          cp android-build/app/build/outputs/apk/debug/*.apk apk-output/alko-vienetai-debug.apk
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: alko-vienetai-debug-apk
+          path: apk-output/alko-vienetai-debug.apk
+          if-no-files-found: error
