@@ -28,23 +28,32 @@ jobs:
             ghcr.io/googlechromelabs/bubblewrap:latest \
             update --manifest=/app/twa-manifest.json
 
-      - name: Build debug APK
+      - name: Build unsigned APK
         run: |
           docker run --rm \
-            --entrypoint /bin/bash \
             -w /app \
             -v "${{ github.workspace }}/android-build:/app" \
             ghcr.io/googlechromelabs/bubblewrap:latest \
-            -lc "./gradlew assembleDebug"
+            build --skipSigning --skipPwaValidation --manifest=/app/twa-manifest.json
+
+      - name: Show generated files
+        if: always()
+        run: |
+          find android-build -maxdepth 4 -type f | sort
 
       - name: Collect APK
         run: |
           mkdir -p apk-output
-          cp android-build/app/build/outputs/apk/debug/*.apk apk-output/alko-vienetai-debug.apk
+          APK_PATH="$(find android-build -type f -name '*.apk' | head -n 1)"
+          if [ -z "$APK_PATH" ]; then
+            echo "No APK file was generated"
+            exit 1
+          fi
+          cp "$APK_PATH" apk-output/alko-vienetai-unsigned.apk
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: alko-vienetai-debug-apk
-          path: apk-output/alko-vienetai-debug.apk
+          name: alko-vienetai-unsigned-apk
+          path: apk-output/alko-vienetai-unsigned.apk
           if-no-files-found: error
