@@ -1,187 +1,24 @@
-<!doctype html>
-<html lang="lt">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="theme-color" content="#0f5132">
-    <title>Alko Vienetai</title>
-    <link rel="manifest" href="manifest.webmanifest">
-    <link rel="stylesheet" href="styles.css">
-  </head>
-  <body>
-    <div class="app-shell">
-      <header class="topbar">
-        <div>
-          <p class="eyebrow">Android prototipas</p>
-          <h1>Alko Vienetai</h1>
-        </div>
-        <button class="icon-button" id="shareButton" title="Dalintis statistika" aria-label="Dalintis statistika">
-          <span aria-hidden="true">↗</span>
-        </button>
-      </header>
-
-      <main>
-        <section class="hero-panel" aria-label="Santrauka">
-          <div>
-            <p class="panel-label">Šiandien</p>
-            <strong id="todayUnits">0.0</strong>
-            <span>vienetų</span>
-          </div>
-          <div class="risk-meter" aria-hidden="true">
-            <div id="riskFill"></div>
-          </div>
-          <p id="riskText" class="muted">Įrašyk pirmą gėrimą ir matysi palyginimą su pasirinkta riba.</p>
-        </section>
-
-        <nav class="tabs" aria-label="Programėlės skyriai">
-          <button class="tab active" data-tab="log">Įrašas</button>
-          <button class="tab" data-tab="stats">Statistika</button>
-          <button class="tab" data-tab="history">Istorija</button>
-          <button class="tab" data-tab="settings">Ribos</button>
-        </nav>
-
-        <section class="screen active" id="logScreen">
-          <form id="drinkForm" class="form-panel">
-            <label>
-              Data
-              <input type="date" id="dateInput" required>
-            </label>
-
-            <div>
-              <div class="label-row">
-                <span>Gėrimas</span>
-                <button type="button" class="text-button" id="customDrinkButton">Kitas</button>
-              </div>
-              <div class="drink-grid" id="drinkGrid"></div>
-            </div>
-
-            <div class="split">
-              <label>
-                Kiekis, ml
-                <input type="number" id="amountInput" min="1" step="1" inputmode="decimal" placeholder="500" required>
-              </label>
-              <label>
-                Stiprumas, %
-                <input type="number" id="abvInput" min="0" max="96" step="0.1" inputmode="decimal" placeholder="5.0" required>
-              </label>
-            </div>
-
-            <div class="calculation-preview">
-              <span id="previewText">Pasirink gėrimą ir kiekį.</span>
-              <strong id="previewUnits">0.0 vnt.</strong>
-            </div>
-
-            <button type="submit" class="primary-button">Pridėti įrašą</button>
-          </form>
-        </section>
-
-        <section class="screen" id="statsScreen">
-          <div class="stats-controls">
-            <label>
-              Nuo
-              <input type="date" id="fromInput">
-            </label>
-            <label>
-              Iki
-              <input type="date" id="toInput">
-            </label>
-          </div>
-
-          <div class="summary-grid">
-            <div>
-              <span>Viso</span>
-              <strong id="periodUnits">0.0</strong>
-              <small>vienetų</small>
-            </div>
-            <div>
-              <span>Gryno alk.</span>
-              <strong id="periodGrams">0</strong>
-              <small>gramų</small>
-            </div>
-            <div>
-              <span>Dienų</span>
-              <strong id="periodDays">0</strong>
-              <small>su įrašais</small>
-            </div>
-          </div>
-
-          <div class="norm-panel">
-            <div class="norm-row">
-              <span>Diena</span>
-              <progress id="dayProgress" value="0" max="100"></progress>
-              <strong id="dayCompare">0%</strong>
-            </div>
-            <div class="norm-row">
-              <span>Savaitė</span>
-              <progress id="weekProgress" value="0" max="100"></progress>
-              <strong id="weekCompare">0%</strong>
-            </div>
-            <div class="norm-row">
-              <span>Mėnuo</span>
-              <progress id="monthProgress" value="0" max="100"></progress>
-              <strong id="monthCompare">0%</strong>
-            </div>
-            <div class="norm-row">
-              <span>Metai</span>
-              <progress id="yearProgress" value="0" max="100"></progress>
-              <strong id="yearCompare">0%</strong>
-            </div>
-          </div>
-
-          <div class="chart-panel">
-            <div class="section-title">
-              <h2>Pagal gėrimą</h2>
-              <span id="topDrink">Nėra duomenų</span>
-            </div>
-            <div id="drinkBreakdown" class="breakdown"></div>
-          </div>
-        </section>
-
-        <section class="screen" id="historyScreen">
-          <div class="section-title">
-            <h2>Įrašai</h2>
-            <button type="button" class="text-button danger" id="clearButton">Išvalyti</button>
-          </div>
-          <div id="historyList" class="history-list"></div>
-        </section>
-
-        <section class="screen" id="settingsScreen">
-          <div class="form-panel">
-            <p class="settings-note">Ribos yra orientacinės ir skirtos savistabai, ne medicininei diagnozei. Programėlė naudoja 1 vienetą = 10 g gryno alkoholio.</p>
-            <div class="split">
-              <label>
-                Dienos riba
-                <input type="number" id="dailyLimitInput" min="0" step="0.5">
-              </label>
-              <label>
-                Savaitės riba
-                <input type="number" id="weeklyLimitInput" min="0" step="0.5">
-              </label>
-            </div>
-            <div class="split">
-              <label>
-                Mėnesio riba
-                <input type="number" id="monthlyLimitInput" min="0" step="1">
-              </label>
-              <label>
-                Metų riba
-                <input type="number" id="yearlyLimitInput" min="0" step="1">
-              </label>
-            </div>
-            <button type="button" class="primary-button" id="saveSettingsButton">Išsaugoti ribas</button>
-          </div>
-        </section>
-      </main>
-    </div>
-
-    <template id="drinkCardTemplate">
-      <button type="button" class="drink-card">
-        <img alt="">
-        <span></span>
-        <small></small>
-      </button>
-    </template>
-
-    <script src="app.js"></script>
-  </body>
-</html>
+{
+  "name": "Alko Vienetai",
+  "short_name": "Vienetai",
+  "description": "Alkoholio vienetų skaičiuoklė ir vartojimo statistika",
+  "lang": "lt",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f6f7f2",
+  "theme_color": "#0f5132",
+  "icons": [
+    {
+      "src": "assets/app-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/app-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
