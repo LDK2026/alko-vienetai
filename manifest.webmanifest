@@ -1,7 +1,7 @@
 {
   "name": "Alko Vienetai",
   "short_name": "Vienetai",
-  "description": "Alkoholio vienetų skaičiuoklė ir statistika",
+  "description": "Alkoholio vienetų skaičiuoklė ir vartojimo statistika.",
   "id": "/alko-vienetai/",
   "start_url": "/alko-vienetai/",
   "scope": "/alko-vienetai/",
