@@ -23,17 +23,19 @@ jobs:
       - name: Generate Android project
         run: |
           docker run --rm \
+            -w /app \
             -v "${{ github.workspace }}/android-build:/app" \
             ghcr.io/googlechromelabs/bubblewrap:latest \
-            update --manifest=/app
+            update --manifest=/app/twa-manifest.json
 
       - name: Build debug APK
         run: |
           docker run --rm \
             --entrypoint /bin/bash \
+            -w /app \
             -v "${{ github.workspace }}/android-build:/app" \
             ghcr.io/googlechromelabs/bubblewrap:latest \
-            -lc "cd /app && ./gradlew assembleDebug"
+            -lc "./gradlew assembleDebug"
 
       - name: Collect APK
         run: |
