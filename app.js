@@ -44,8 +44,8 @@ function init() {
   refresh();
 
   if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("service-worker.js");
-  }
+  navigator.serviceWorker.register("/alko-vienetai/service-worker.js");
+}
 }
 
 function bind() {
