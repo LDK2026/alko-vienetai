@@ -1,24 +1,39 @@
 # Android APK per GitHub Actions
 
-Šis repo gali sugeneruoti testinį Android APK per GitHub Actions.
+Šis rinkinys sukuria paprastą Android WebView programėlę, kuri atidaro:
 
-## Kaip paleisti
+`https://ldk2026.github.io/alko-vienetai/`
 
-1. Įkelk į repo šiuos failus:
-   - `twa-manifest.json`
-   - `.github/workflows/build-android-debug-apk.yml`
-2. GitHub repo atidaryk `Actions`.
-3. Pasirink `Build Android Debug APK`.
-4. Spausk `Run workflow`.
-5. Kai build baigsis, atidaryk run puslapį ir apačioje atsisiųsk artifact `alko-vienetai-unsigned-apk`.
-6. Išskleisk ZIP. Viduje bus `alko-vienetai-unsigned.apk`.
+Tai ne Bubblewrap/TWA buildas. Šitas kelias yra paprastesnis ir skirtas greitai gauti į telefoną įdiegiamą `debug APK`.
+
+## Ką įkelti į repo
+
+Įkelk šiuos failus ir aplankus į repo šaknį:
+
+- `.github/workflows/build-android-debug-apk.yml`
+- `android-app/`
+- `APK-BUILD.md`
+
+Jei repo jau turi seną `.github/workflows/build-android-debug-apk.yml`, pakeisk jį šia nauja versija.
+
+## Kaip sugeneruoti APK
+
+1. GitHub repo atidaryk `Actions`.
+2. Pasirink `Build Android Debug APK`.
+3. Spausk `Run workflow`.
+4. Kai workflow baigsis, atidaryk run puslapį.
+5. Apačioje atsisiųsk artifact `alko-vienetai-debug-apk`.
+6. ZIP viduje bus `alko-vienetai-debug.apk`.
+
+## Kaip įdiegti telefone
+
+1. Perkelk `alko-vienetai-debug.apk` į Android telefoną.
+2. Atidaryk APK telefone.
+3. Jei Android prašo, leisk diegimą iš nežinomų šaltinių.
 
 ## Pastabos
 
-- Tai unsigned APK, skirtas techniniam build patikrinimui.
-- Android gali paprašyti leisti diegimą iš nežinomų šaltinių.
-- Jeigu Android atsisako diegti unsigned APK, kitas žingsnis yra pridėti GitHub Secrets su keystore slaptažodžiais ir generuoti signed APK.
-- Play Store leidimui reikės release pasirašymo rakto ir signed AAB/APK.
-- Kad Trusted Web Activity pilnai veiktų be naršyklės juostos, vėliau reikės `assetlinks.json` failo domeno šaknyje: `https://ldk2026.github.io/.well-known/assetlinks.json`.
-- Jei workflow buvo įkeltas anksčiau ir rodė `EISDIR: illegal operation on a directory, read`, pakeisk `.github/workflows/build-android-debug-apk.yml` šia nauja versija.
-- Jei workflow buvo įkeltas anksčiau ir rodė `./gradlew: No such file or directory`, pakeisk `.github/workflows/build-android-debug-apk.yml` šia nauja versija.
+- Tai `debug APK`, tinkamas testavimui.
+- Programėlė naudoja Android WebView ir atidaro viešą PWA puslapį.
+- Play Store leidimui vėliau reikės signed release APK/AAB.
+- Jei nori pilnos Trusted Web Activity versijos be WebView, reikės tvarkyti TWA/Bubblewrap ir `assetlinks.json`.
