@@ -1,0 +1,365 @@
+const GRAMS_PER_UNIT = 10;
+const ETHANOL_DENSITY = 0.789;
+const STORAGE_KEY = "alko-vienetai.entries";
+const SETTINGS_KEY = "alko-vienetai.settings";
+
+const drinks = [
+  { id: "beer", name: "Alus", abv: 5, amount: 500, image: "assets/beer.svg" },
+  { id: "wine", name: "Vynas", abv: 12, amount: 150, image: "assets/wine.svg" },
+  { id: "vodka", name: "Degtinė", abv: 40, amount: 40, image: "assets/vodka.svg" },
+  { id: "champagne", name: "Šampanas", abv: 12, amount: 120, image: "assets/champagne.svg" },
+  { id: "cider", name: "Sidras", abv: 4.5, amount: 500, image: "assets/cider.svg" },
+  { id: "cocktail", name: "Kokteilis", abv: 10, amount: 250, image: "assets/cocktail.svg" },
+  { id: "whiskey", name: "Viskis", abv: 40, amount: 40, image: "assets/whiskey.svg" },
+  { id: "liqueur", name: "Likeris", abv: 20, amount: 60, image: "assets/liqueur.svg" },
+  { id: "other", name: "Kita", abv: 5, amount: 330, image: "assets/other.svg" }
+];
+
+let selectedDrink = drinks[0];
+let entries = readJson(STORAGE_KEY, []);
+let settings = readJson(SETTINGS_KEY, {
+  dailyLimit: 2,
+  weeklyLimit: 10,
+  monthlyLimit: 40,
+  yearlyLimit: 520
+});
+
+const els = {
+  date: document.querySelector("#dateInput"),
+  amount: document.querySelector("#amountInput"),
+  abv: document.querySelector("#abvInput"),
+  drinkGrid: document.querySelector("#drinkGrid"),
+  previewText: document.querySelector("#previewText"),
+  previewUnits: document.querySelector("#previewUnits"),
+  form: document.querySelector("#drinkForm"),
+  todayUnits: document.querySelector("#todayUnits"),
+  riskFill: document.querySelector("#riskFill"),
+  riskText: document.querySelector("#riskText"),
+  from: document.querySelector("#fromInput"),
+  to: document.querySelector("#toInput"),
+  periodUnits: document.querySelector("#periodUnits"),
+  periodGrams: document.querySelector("#periodGrams"),
+  periodDays: document.querySelector("#periodDays"),
+  dayProgress: document.querySelector("#dayProgress"),
+  weekProgress: document.querySelector("#weekProgress"),
+  monthProgress: document.querySelector("#monthProgress"),
+  yearProgress: document.querySelector("#yearProgress"),
+  dayCompare: document.querySelector("#dayCompare"),
+  weekCompare: document.querySelector("#weekCompare"),
+  monthCompare: document.querySelector("#monthCompare"),
+  yearCompare: document.querySelector("#yearCompare"),
+  drinkBreakdown: document.querySelector("#drinkBreakdown"),
+  topDrink: document.querySelector("#topDrink"),
+  historyList: document.querySelector("#historyList"),
+  clearButton: document.querySelector("#clearButton"),
+  shareButton: document.querySelector("#shareButton"),
+  dailyLimit: document.querySelector("#dailyLimitInput"),
+  weeklyLimit: document.querySelector("#weeklyLimitInput"),
+  monthlyLimit: document.querySelector("#monthlyLimitInput"),
+  yearlyLimit: document.querySelector("#yearlyLimitInput"),
+  saveSettings: document.querySelector("#saveSettingsButton"),
+  customDrink: document.querySelector("#customDrinkButton")
+};
+
+init();
+
+function init() {
+  const today = isoDate(new Date());
+  els.date.value = today;
+  els.to.value = today;
+  els.from.value = isoDate(addDays(new Date(), -30));
+  hydrateSettings();
+  renderDrinks();
+  selectDrink(selectedDrink.id);
+  bindEvents();
+  refresh();
+
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("service-worker.js").catch(() => {});
+  }
+}
+
+function bindEvents() {
+  document.querySelectorAll(".tab").forEach((tab) => {
+    tab.addEventListener("click", () => activateTab(tab.dataset.tab));
+  });
+
+  [els.amount, els.abv].forEach((input) => input.addEventListener("input", updatePreview));
+  [els.from, els.to].forEach((input) => input.addEventListener("change", refresh));
+
+  els.form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const amount = Number(els.amount.value);
+    const abv = Number(els.abv.value);
+    if (!amount || !abv) return;
+
+    const grams = calculateGrams(amount, abv);
+    const entry = {
+      id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+      date: els.date.value,
+      drinkId: selectedDrink.id,
+      drinkName: selectedDrink.name,
+      amount,
+      abv,
+      grams,
+      units: grams / GRAMS_PER_UNIT,
+      image: selectedDrink.image,
+      createdAt: new Date().toISOString()
+    };
+
+    entries = [entry, ...entries];
+    persistEntries();
+    els.amount.value = selectedDrink.amount;
+    updatePreview();
+    refresh();
+    activateTab("stats");
+  });
+
+  els.clearButton.addEventListener("click", () => {
+    if (!entries.length) return;
+    if (confirm("Ar tikrai ištrinti visus įrašus šiame įrenginyje?")) {
+      entries = [];
+      persistEntries();
+      refresh();
+    }
+  });
+
+  els.saveSettings.addEventListener("click", () => {
+    settings = {
+      dailyLimit: Number(els.dailyLimit.value) || 0,
+      weeklyLimit: Number(els.weeklyLimit.value) || 0,
+      monthlyLimit: Number(els.monthlyLimit.value) || 0,
+      yearlyLimit: Number(els.yearlyLimit.value) || 0
+    };
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+    refresh();
+    activateTab("stats");
+  });
+
+  els.customDrink.addEventListener("click", () => {
+    selectDrink("other");
+    els.amount.focus();
+  });
+
+  els.shareButton.addEventListener("click", shareStats);
+}
+
+function renderDrinks() {
+  const template = document.querySelector("#drinkCardTemplate");
+  els.drinkGrid.innerHTML = "";
+  drinks.forEach((drink) => {
+    const node = template.content.firstElementChild.cloneNode(true);
+    node.dataset.id = drink.id;
+    node.querySelector("img").src = drink.image;
+    node.querySelector("img").alt = drink.name;
+    node.querySelector("span").textContent = drink.name;
+    node.querySelector("small").textContent = `${drink.amount} ml · ${drink.abv}%`;
+    node.addEventListener("click", () => selectDrink(drink.id));
+    els.drinkGrid.append(node);
+  });
+}
+
+function selectDrink(id) {
+  selectedDrink = drinks.find((drink) => drink.id === id) || drinks[0];
+  els.amount.value = selectedDrink.amount;
+  els.abv.value = selectedDrink.abv;
+  document.querySelectorAll(".drink-card").forEach((card) => {
+    card.classList.toggle("selected", card.dataset.id === selectedDrink.id);
+  });
+  updatePreview();
+}
+
+function updatePreview() {
+  const amount = Number(els.amount.value) || 0;
+  const abv = Number(els.abv.value) || 0;
+  const grams = calculateGrams(amount, abv);
+  const units = grams / GRAMS_PER_UNIT;
+  els.previewText.textContent = `${amount || 0} ml, ${abv || 0}% = ${grams.toFixed(1)} g gryno alkoholio`;
+  els.previewUnits.textContent = `${units.toFixed(1)} vnt.`;
+}
+
+function refresh() {
+  renderToday();
+  renderStats();
+  renderHistory();
+}
+
+function renderToday() {
+  const today = isoDate(new Date());
+  const total = entries.filter((entry) => entry.date === today).reduce((sum, entry) => sum + entry.units, 0);
+  const percent = settings.dailyLimit ? (total / settings.dailyLimit) * 100 : 0;
+  els.todayUnits.textContent = total.toFixed(1);
+  els.riskFill.style.width = `${Math.min(percent, 100)}%`;
+  els.riskFill.style.background = percent > 100 ? "var(--red)" : percent > 75 ? "var(--amber)" : "var(--green)";
+  els.riskText.textContent = settings.dailyLimit
+    ? `Tai sudaro ${Math.round(percent)}% tavo dienos ribos (${settings.dailyLimit} vnt.).`
+    : "Dienos riba nenustatyta.";
+}
+
+function renderStats() {
+  const filtered = filterByPeriod(entries, els.from.value, els.to.value);
+  const units = sum(filtered, "units");
+  const grams = sum(filtered, "grams");
+  const uniqueDays = new Set(filtered.map((entry) => entry.date)).size;
+  els.periodUnits.textContent = units.toFixed(1);
+  els.periodGrams.textContent = Math.round(grams);
+  els.periodDays.textContent = uniqueDays;
+
+  const now = new Date();
+  const today = isoDate(now);
+  const dayUnits = sum(entries.filter((entry) => entry.date === today), "units");
+  const weekUnits = sum(entries.filter((entry) => entry.date >= isoDate(addDays(now, -6)) && entry.date <= today), "units");
+  const monthUnits = sum(entries.filter((entry) => entry.date >= isoDate(addDays(now, -29)) && entry.date <= today), "units");
+  const yearUnits = sum(entries.filter((entry) => entry.date >= isoDate(addDays(now, -364)) && entry.date <= today), "units");
+
+  setProgress(els.dayProgress, els.dayCompare, dayUnits, settings.dailyLimit);
+  setProgress(els.weekProgress, els.weekCompare, weekUnits, settings.weeklyLimit);
+  setProgress(els.monthProgress, els.monthCompare, monthUnits, settings.monthlyLimit);
+  setProgress(els.yearProgress, els.yearCompare, yearUnits, settings.yearlyLimit);
+  renderBreakdown(filtered);
+}
+
+function renderBreakdown(filtered) {
+  const grouped = drinks.map((drink) => {
+    const drinkEntries = filtered.filter((entry) => entry.drinkId === drink.id || entry.drinkName === drink.name);
+    return {
+      name: drink.name,
+      units: sum(drinkEntries, "units"),
+      amount: sum(drinkEntries, "amount")
+    };
+  }).filter((item) => item.units > 0).sort((a, b) => b.units - a.units);
+
+  els.drinkBreakdown.innerHTML = "";
+  els.topDrink.textContent = grouped[0] ? `Daugiausia: ${grouped[0].name}` : "Nėra duomenų";
+  const max = grouped[0]?.units || 1;
+
+  if (!grouped.length) {
+    els.drinkBreakdown.innerHTML = `<p class="muted">Pasirink laikotarpį arba pridėk įrašų.</p>`;
+    return;
+  }
+
+  grouped.forEach((item) => {
+    const row = document.createElement("div");
+    row.className = "breakdown-item";
+    row.innerHTML = `
+      <div class="breakdown-line">
+        <span>${item.name}</span>
+        <strong>${item.units.toFixed(1)} vnt.</strong>
+      </div>
+      <div class="bar"><div style="width: ${(item.units / max) * 100}%"></div></div>
+      <small>${Math.round(item.amount)} ml per pasirinktą laikotarpį</small>
+    `;
+    els.drinkBreakdown.append(row);
+  });
+}
+
+function renderHistory() {
+  els.historyList.innerHTML = "";
+  if (!entries.length) {
+    els.historyList.innerHTML = `<p class="muted">Įrašų dar nėra.</p>`;
+    return;
+  }
+
+  entries.slice().sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt)).forEach((entry) => {
+    const item = document.createElement("article");
+    item.className = "history-item";
+    item.innerHTML = `
+      <img src="${entry.image}" alt="${entry.drinkName}">
+      <div>
+        <strong>${entry.drinkName}</strong>
+        <span>${entry.amount} ml · ${entry.abv}%</span>
+        <small>${formatLtDate(entry.date)} · ${entry.units.toFixed(1)} vnt.</small>
+      </div>
+      <button type="button" class="delete-entry" aria-label="Ištrinti įrašą">×</button>
+    `;
+    item.querySelector("button").addEventListener("click", () => {
+      entries = entries.filter((candidate) => candidate.id !== entry.id);
+      persistEntries();
+      refresh();
+    });
+    els.historyList.append(item);
+  });
+}
+
+async function shareStats() {
+  const filtered = filterByPeriod(entries, els.from.value, els.to.value);
+  const units = sum(filtered, "units").toFixed(1);
+  const top = summarizeTopDrink(filtered);
+  const text = `Mano alkoholio vienetų statistika: ${units} vnt. (${els.from.value} - ${els.to.value}). ${top}`;
+
+  if (navigator.share) {
+    await navigator.share({ title: "Alko Vienetai", text }).catch(() => {});
+    return;
+  }
+  await navigator.clipboard?.writeText(text).catch(() => {});
+  alert("Statistika paruošta dalinimuisi ir nukopijuota.");
+}
+
+function summarizeTopDrink(list) {
+  const totals = {};
+  list.forEach((entry) => {
+    totals[entry.drinkName] = (totals[entry.drinkName] || 0) + entry.units;
+  });
+  const top = Object.entries(totals).sort((a, b) => b[1] - a[1])[0];
+  return top ? `Daugiausia: ${top[0]} (${top[1].toFixed(1)} vnt.).` : "Įrašų nėra.";
+}
+
+function hydrateSettings() {
+  els.dailyLimit.value = settings.dailyLimit;
+  els.weeklyLimit.value = settings.weeklyLimit;
+  els.monthlyLimit.value = settings.monthlyLimit;
+  els.yearlyLimit.value = settings.yearlyLimit;
+}
+
+function activateTab(name) {
+  document.querySelectorAll(".tab").forEach((tab) => tab.classList.toggle("active", tab.dataset.tab === name));
+  document.querySelectorAll(".screen").forEach((screen) => screen.classList.remove("active"));
+  document.querySelector(`#${name}Screen`).classList.add("active");
+}
+
+function calculateGrams(amountMl, abv) {
+  return amountMl * (abv / 100) * ETHANOL_DENSITY;
+}
+
+function setProgress(progress, label, units, limit) {
+  const percent = limit ? Math.round((units / limit) * 100) : 0;
+  progress.value = Math.min(percent, 100);
+  label.textContent = `${percent}%`;
+}
+
+function filterByPeriod(list, from, to) {
+  return list.filter((entry) => (!from || entry.date >= from) && (!to || entry.date <= to));
+}
+
+function sum(list, key) {
+  return list.reduce((total, item) => total + Number(item[key] || 0), 0);
+}
+
+function addDays(date, days) {
+  const copy = new Date(date);
+  copy.setDate(copy.getDate() + days);
+  return copy;
+}
+
+function isoDate(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function formatLtDate(value) {
+  return new Intl.DateTimeFormat("lt-LT", { dateStyle: "medium" }).format(new Date(`${value}T12:00:00`));
+}
+
+function readJson(key, fallback) {
+  try {
+    return JSON.parse(localStorage.getItem(key)) || fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function persistEntries() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+}

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 118" role="img" aria-label="Kokteilis">
+  <rect width="160" height="118" fill="#f2e8df"/>
+  <path d="M42 24h76L83 65v34h21v7H56v-7h21V65z" fill="#eef8fb"/>
+  <path d="M54 33h52L82 61H78z" fill="#d86a47"/>
+  <path d="M100 22l21 21" stroke="#6a4b3c" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="118" cy="41" r="12" fill="#f0a53a"/>
+  <circle cx="118" cy="41" r="5" fill="#f8cf75"/>
+</svg>

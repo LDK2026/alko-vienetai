@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 118" role="img" aria-label="Sampanas">
+  <rect width="160" height="118" fill="#eef1df"/>
+  <path d="M52 19h56l-8 46c-2 12-10 18-20 18s-18-6-20-18z" fill="#f9fdff" opacity=".88"/>
+  <path d="M61 48h38l-3 17c-2 9-8 14-16 14s-14-5-16-14z" fill="#e2bd56"/>
+  <path d="M80 83v21M63 105h34" stroke="#6a654c" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="73" cy="58" r="2.5" fill="#fff3bc"/>
+  <circle cx="84" cy="67" r="2.5" fill="#fff3bc"/>
+  <circle cx="90" cy="55" r="2.5" fill="#fff3bc"/>
+</svg>

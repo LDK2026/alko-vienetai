@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 118" role="img" aria-label="Likeris">
+  <rect width="160" height="118" fill="#efe6f0"/>
+  <rect x="64" y="16" width="32" height="18" rx="5" fill="#8e5c9c"/>
+  <rect x="54" y="31" width="52" height="74" rx="13" fill="#fdf8ff"/>
+  <rect x="61" y="49" width="38" height="38" rx="8" fill="#7c3e83"/>
+  <path d="M69 58h22M69 68h22M69 78h13" stroke="#f6d9fb" stroke-width="3" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 118" role="img" aria-label="Degtinė">
+  <rect width="160" height="118" fill="#e8f0f3"/>
+  <rect x="66" y="15" width="28" height="20" rx="4" fill="#d8e8ef"/>
+  <rect x="58" y="31" width="44" height="73" rx="10" fill="#f9fdff"/>
+  <rect x="64" y="48" width="32" height="34" rx="4" fill="#b9d6e3"/>
+  <path d="M70 54h20M70 64h20M70 74h12" stroke="#315e70" stroke-width="3" stroke-linecap="round"/>
+  <path d="M69 34h22" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
+</svg>
