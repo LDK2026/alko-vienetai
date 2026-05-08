@@ -19,3 +19,4 @@
 - Android gali paprašyti leisti diegimą iš nežinomų šaltinių.
 - Play Store leidimui reikės release pasirašymo rakto ir signed AAB/APK.
 - Kad Trusted Web Activity pilnai veiktų be naršyklės juostos, vėliau reikės `assetlinks.json` failo domeno šaknyje: `https://ldk2026.github.io/.well-known/assetlinks.json`.
+- Jei workflow buvo įkeltas anksčiau ir rodė `EISDIR: illegal operation on a directory, read`, pakeisk `.github/workflows/build-android-debug-apk.yml` šia nauja versija.
