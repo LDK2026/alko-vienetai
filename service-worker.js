@@ -1,11 +1,25 @@
-Ikelimo struktura:
+const CACHE_NAME = "alko-vienetai-v1";
 
-1. upload-ready-pwa/index.html ikelk i pagrindini carmapoints.eu kataloga.
-2. Visa aplanka upload-ready-pwa/alko-vienetai ikelk i pagrindini carmapoints.eu kataloga kaip alko-vienetai.
+const ASSETS = [
+  "./",
+  "./index.html",
+  "./styles.css",
+  "./app.js",
+  "./manifest.webmanifest",
+  "./assets/app-icon-192.png",
+  "./assets/app-icon-512.png"
+];
 
-Po ikelimo turi veikti:
-https://carmapoints.eu/
-https://carmapoints.eu/alko-vienetai/
+self.addEventListener("install", (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
+  );
+});
 
-Programeles mygtukas pagrindiniame puslapyje turi atidaryti /alko-vienetai/.
-Android Chrome meniu pasirink Add to Home screen arba Install app.
+self.addEventListener("fetch", (event) => {
+  event.respondWith(
+    caches.match(event.request).then((response) => {
+      return response || fetch(event.request);
+    })
+  );
+});
