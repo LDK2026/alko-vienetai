@@ -1,0 +1,31 @@
+{
+  "packageId": "eu.ldk2026.alkovienetai",
+  "host": "https://ldk2026.github.io",
+  "name": "Alko Vienetai",
+  "launcherName": "Vienetai",
+  "display": "standalone",
+  "themeColor": "#0f5132",
+  "themeColorDark": "#0f5132",
+  "navigationColor": "#f6f7f2",
+  "navigationColorDark": "#17211c",
+  "navigationDividerColor": "#dbe4dc",
+  "navigationDividerColorDark": "#17211c",
+  "backgroundColor": "#f6f7f2",
+  "enableNotifications": false,
+  "enableSiteSettingsShortcut": true,
+  "orientation": "portrait",
+  "fallbackType": "customtabs",
+  "startUrl": "/alko-vienetai/",
+  "webManifestUrl": "https://ldk2026.github.io/alko-vienetai/manifest.webmanifest",
+  "iconUrl": "https://ldk2026.github.io/alko-vienetai/assets/app-icon-512.png",
+  "maskableIconUrl": "https://ldk2026.github.io/alko-vienetai/assets/app-icon-512.png",
+  "monochromeIconUrl": "https://ldk2026.github.io/alko-vienetai/assets/app-icon-512.png",
+  "appVersion": "1.0.0",
+  "appVersionCode": 1,
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "android.keystore",
+    "alias": "android"
+  },
+  "generatorApp": "bubblewrap-cli"
+}
