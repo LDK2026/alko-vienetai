@@ -61,31 +61,64 @@
 
       <section class="screen active" id="logScreen">
         <form id="drinkForm" class="form-panel">
-          <label>
-            Data
-            <input type="date" id="dateInput" required>
-          </label>
+          <div class="date-panel">
+            <label>
+              Data
+              <input type="date" id="dateInput" required>
+            </label>
+            <div class="date-actions">
+              <button class="secondary-button icon-step" type="button" id="prevDateButton" aria-label="Ankstesnė diena">‹</button>
+              <button class="secondary-button" type="button" id="todayDateButton">Šiandien</button>
+              <button class="secondary-button icon-step" type="button" id="nextDateButton" aria-label="Kita diena">›</button>
+            </div>
+          </div>
 
           <div class="drink-grid" id="drinkGrid" aria-label="Gėrimų pasirinkimas"></div>
 
-          <div class="split">
-            <label>
-              Kiekis (ml)
-              <input type="number" id="amountInput" min="1" step="1" inputmode="numeric" required>
-            </label>
+          <section class="drink-detail-panel" id="drinkDetailPanel" aria-live="polite">
+            <div class="selected-drink">
+              <img id="selectedDrinkImage" alt="">
+              <div>
+                <p class="panel-label">Pasirinktas gėrimas</p>
+                <h2 id="selectedDrinkName">Alus</h2>
+              </div>
+            </div>
 
-            <label>
-              ABV %
-              <input type="number" id="abvInput" min="0" max="96" step="0.1" inputmode="decimal" required>
-            </label>
-          </div>
+            <div class="option-group">
+              <div class="option-heading">
+                <strong>Porcija</strong>
+                <span>Kiek išgerta?</span>
+              </div>
+              <div class="option-grid" id="portionOptions"></div>
+            </div>
 
-          <div class="calculation-preview" aria-live="polite">
-            <span id="previewText">Pasirink gėrimą</span>
-            <strong id="previewUnits">0.0 vnt.</strong>
-          </div>
+            <div class="option-group">
+              <div class="option-heading">
+                <strong>Stiprumas</strong>
+                <span>ABV %</span>
+              </div>
+              <div class="option-grid" id="strengthOptions"></div>
+            </div>
 
-          <button type="submit" class="primary-button">Pridėti</button>
+            <div class="split">
+              <label>
+                Kiekis (ml)
+                <input type="number" id="amountInput" min="1" step="1" inputmode="numeric" required>
+              </label>
+
+              <label>
+                ABV %
+                <input type="number" id="abvInput" min="0" max="96" step="0.1" inputmode="decimal" required>
+              </label>
+            </div>
+
+            <div class="calculation-preview" aria-live="polite">
+              <span id="previewText">Pasirink gėrimą</span>
+              <strong id="previewUnits">0.0 vnt.</strong>
+            </div>
+
+            <button type="submit" class="primary-button">Pridėti įrašą</button>
+          </section>
         </form>
       </section>
 

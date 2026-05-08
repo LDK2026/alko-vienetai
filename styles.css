@@ -76,14 +76,15 @@ h1 {
 }
 
 h2 {
-  font-size: 1.2rem;
+  font-size: 1.25rem;
 }
 
 .icon-button,
 .secondary-button,
 .primary-button,
 .tab,
-.drink-card {
+.drink-card,
+.option-chip {
   border: 0;
 }
 
@@ -100,6 +101,7 @@ h2 {
 
 .hero-panel,
 .form-panel,
+.drink-detail-panel,
 .summary-grid > div,
 .history-item,
 .breakdown-row {
@@ -213,23 +215,44 @@ button:focus-visible {
   outline-offset: 2px;
 }
 
+.date-panel {
+  display: grid;
+  gap: 10px;
+}
+
+.date-actions {
+  display: grid;
+  grid-template-columns: 48px 1fr 48px;
+  gap: 8px;
+}
+
+.icon-step {
+  padding: 0;
+  font-size: 1.35rem;
+}
+
 .drink-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 10px;
 }
 
 .drink-card {
   display: grid;
-  min-height: 122px;
-  gap: 6px;
+  min-height: 146px;
+  gap: 7px;
   align-content: center;
   justify-items: center;
-  padding: 12px 8px;
+  padding: 14px 8px;
   border: 1px solid var(--line);
   border-radius: 8px;
   color: var(--text);
   background: var(--surface-soft);
+  transition: transform 120ms ease, border-color 120ms ease, background-color 120ms ease;
+}
+
+.drink-card:hover {
+  transform: translateY(-1px);
 }
 
 .drink-card.active {
@@ -239,8 +262,8 @@ button:focus-visible {
 }
 
 .drink-card img {
-  width: 42px;
-  height: 42px;
+  width: 62px;
+  height: 62px;
   object-fit: contain;
 }
 
@@ -251,6 +274,77 @@ button:focus-visible {
 .drink-card small {
   color: var(--muted);
   font-size: 0.78rem;
+}
+
+.drink-detail-panel {
+  display: grid;
+  gap: 16px;
+  padding: 16px;
+}
+
+.selected-drink {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--surface-soft);
+}
+
+.selected-drink img {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+}
+
+.option-group {
+  display: grid;
+  gap: 10px;
+}
+
+.option-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.option-heading span {
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.option-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.option-chip {
+  min-height: 62px;
+  display: grid;
+  gap: 3px;
+  align-content: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px;
+  color: var(--text);
+  background: #fff;
+}
+
+.option-chip strong {
+  font-size: 0.92rem;
+}
+
+.option-chip span {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.option-chip.active {
+  border-color: var(--accent);
+  background: #e5f2e8;
+  box-shadow: inset 0 0 0 1px var(--accent);
 }
 
 .split {
@@ -363,7 +457,7 @@ button:focus-visible {
   text-align: center;
 }
 
-@media (max-width: 560px) {
+@media (max-width: 640px) {
   .app-shell {
     padding: 16px;
   }
@@ -384,5 +478,11 @@ button:focus-visible {
 
   .drink-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 420px) {
+  .option-grid {
+    grid-template-columns: 1fr;
   }
 }

@@ -9,25 +9,143 @@ const DEFAULT_SETTINGS = {
 };
 
 const drinks = [
-  { id: "beer", name: "Alus", abv: 5, amount: 500, image: "beer.svg" },
-  { id: "wine", name: "Vynas", abv: 12, amount: 150, image: "wine.svg" },
-  { id: "vodka", name: "Degtinė", abv: 40, amount: 40, image: "vodka.svg" },
-  { id: "whiskey", name: "Viskis", abv: 40, amount: 40, image: "whiskey.svg" },
-  { id: "champagne", name: "Putojantis", abv: 11, amount: 150, image: "champagne.svg" },
-  { id: "cider", name: "Sidras", abv: 4.5, amount: 500, image: "cider.svg" },
-  { id: "liqueur", name: "Likeris", abv: 20, amount: 50, image: "liqueur.svg" },
-  { id: "other", name: "Kita", abv: 0, amount: 100, image: "other.svg" }
+  {
+    id: "beer",
+    name: "Alus",
+    image: "beer.svg",
+    portions: [
+      { label: "Mažas", detail: "330 ml", amount: 330 },
+      { label: "Bokalas", detail: "500 ml", amount: 500 },
+      { label: "Pinta", detail: "568 ml", amount: 568 }
+    ],
+    strengths: [
+      { label: "Lengvas", detail: "4.5%", abv: 4.5 },
+      { label: "Įprastas", detail: "5%", abv: 5 },
+      { label: "Stiprus", detail: "6.5%", abv: 6.5 }
+    ]
+  },
+  {
+    id: "wine",
+    name: "Vynas",
+    image: "wine.svg",
+    portions: [
+      { label: "Maža taurė", detail: "100 ml", amount: 100 },
+      { label: "Taurė", detail: "150 ml", amount: 150 },
+      { label: "Didelė taurė", detail: "175 ml", amount: 175 }
+    ],
+    strengths: [
+      { label: "Lengvas", detail: "10.5%", abv: 10.5 },
+      { label: "Sausas", detail: "12%", abv: 12 },
+      { label: "Stipresnis", detail: "14%", abv: 14 }
+    ]
+  },
+  {
+    id: "vodka",
+    name: "Degtinė",
+    image: "vodka.svg",
+    portions: [
+      { label: "Maža", detail: "30 ml", amount: 30 },
+      { label: "Standartinė", detail: "40 ml", amount: 40 },
+      { label: "Dviguba", detail: "80 ml", amount: 80 }
+    ],
+    strengths: [
+      { label: "Įprasta", detail: "40%", abv: 40 },
+      { label: "Stipri", detail: "50%", abv: 50 }
+    ]
+  },
+  {
+    id: "whiskey",
+    name: "Viskis",
+    image: "whiskey.svg",
+    portions: [
+      { label: "Mažas", detail: "30 ml", amount: 30 },
+      { label: "Standartinis", detail: "40 ml", amount: 40 },
+      { label: "Dvigubas", detail: "80 ml", amount: 80 }
+    ],
+    strengths: [
+      { label: "Įprastas", detail: "40%", abv: 40 },
+      { label: "Stipresnis", detail: "46%", abv: 46 }
+    ]
+  },
+  {
+    id: "champagne",
+    name: "Putojantis",
+    image: "champagne.svg",
+    portions: [
+      { label: "Fleita", detail: "100 ml", amount: 100 },
+      { label: "Taurė", detail: "150 ml", amount: 150 },
+      { label: "Didelė", detail: "200 ml", amount: 200 }
+    ],
+    strengths: [
+      { label: "Lengvas", detail: "10.5%", abv: 10.5 },
+      { label: "Įprastas", detail: "11%", abv: 11 },
+      { label: "Sausas", detail: "12%", abv: 12 }
+    ]
+  },
+  {
+    id: "cider",
+    name: "Sidras",
+    image: "cider.svg",
+    portions: [
+      { label: "Buteliukas", detail: "330 ml", amount: 330 },
+      { label: "Skardinė", detail: "440 ml", amount: 440 },
+      { label: "Didelis", detail: "500 ml", amount: 500 }
+    ],
+    strengths: [
+      { label: "Lengvas", detail: "4%", abv: 4 },
+      { label: "Įprastas", detail: "4.5%", abv: 4.5 },
+      { label: "Stipresnis", detail: "6%", abv: 6 }
+    ]
+  },
+  {
+    id: "liqueur",
+    name: "Likeris",
+    image: "liqueur.svg",
+    portions: [
+      { label: "Mažas", detail: "25 ml", amount: 25 },
+      { label: "Taurelė", detail: "50 ml", amount: 50 },
+      { label: "Didelis", detail: "75 ml", amount: 75 }
+    ],
+    strengths: [
+      { label: "Lengvas", detail: "15%", abv: 15 },
+      { label: "Įprastas", detail: "20%", abv: 20 },
+      { label: "Stiprus", detail: "30%", abv: 30 }
+    ]
+  },
+  {
+    id: "other",
+    name: "Kita",
+    image: "other.svg",
+    portions: [
+      { label: "Mažai", detail: "50 ml", amount: 50 },
+      { label: "Vidutiniškai", detail: "150 ml", amount: 150 },
+      { label: "Daugiau", detail: "300 ml", amount: 300 }
+    ],
+    strengths: [
+      { label: "Silpnas", detail: "4%", abv: 4 },
+      { label: "Vynas", detail: "12%", abv: 12 },
+      { label: "Stiprus", detail: "40%", abv: 40 }
+    ]
+  }
 ];
 
 let selectedDrink = drinks[0];
+let autoDate = true;
 let entries = readJson(STORAGE_KEY, []);
 let settings = { ...DEFAULT_SETTINGS, ...readJson(SETTINGS_KEY, {}) };
 
 const els = {
   date: document.querySelector("#dateInput"),
+  prevDate: document.querySelector("#prevDateButton"),
+  nextDate: document.querySelector("#nextDateButton"),
+  todayDate: document.querySelector("#todayDateButton"),
   amount: document.querySelector("#amountInput"),
   abv: document.querySelector("#abvInput"),
   drinkGrid: document.querySelector("#drinkGrid"),
+  selectedDrinkImage: document.querySelector("#selectedDrinkImage"),
+  selectedDrinkName: document.querySelector("#selectedDrinkName"),
+  portionOptions: document.querySelector("#portionOptions"),
+  strengthOptions: document.querySelector("#strengthOptions"),
   previewText: document.querySelector("#previewText"),
   previewUnits: document.querySelector("#previewUnits"),
   form: document.querySelector("#drinkForm"),
@@ -60,6 +178,7 @@ function init() {
   selectDrink(selectedDrink.id);
   bindEvents();
   refresh();
+  scheduleDateSync();
 
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("./service-worker.js").catch(() => {});
@@ -68,8 +187,20 @@ function init() {
 
 function bindEvents() {
   els.form.addEventListener("submit", addEntry);
-  els.amount.addEventListener("input", updatePreview);
-  els.abv.addEventListener("input", updatePreview);
+  els.amount.addEventListener("input", () => {
+    markManualOption(els.portionOptions);
+    updatePreview();
+  });
+  els.abv.addEventListener("input", () => {
+    markManualOption(els.strengthOptions);
+    updatePreview();
+  });
+  els.date.addEventListener("change", () => {
+    autoDate = els.date.value === todayIso();
+  });
+  els.prevDate.addEventListener("click", () => shiftDate(-1));
+  els.nextDate.addEventListener("click", () => shiftDate(1));
+  els.todayDate.addEventListener("click", setToday);
   els.saveSettings.addEventListener("click", saveSettings);
   els.clearHistory.addEventListener("click", clearHistory);
   els.shareButton.addEventListener("click", share);
@@ -87,15 +218,15 @@ function renderDrinks() {
     const fragment = template.content.cloneNode(true);
     const button = fragment.querySelector("button");
     const image = button.querySelector("img");
+    const defaultPortion = drink.portions[0];
+    const defaultStrength = drink.strengths[0];
 
     button.dataset.drink = drink.id;
     button.setAttribute("aria-pressed", "false");
     image.src = drink.image;
     image.alt = "";
     button.querySelector("span").textContent = drink.name;
-    button.querySelector("small").textContent = drink.abv
-      ? `${drink.amount} ml / ${drink.abv}%`
-      : "Įvesk pats";
+    button.querySelector("small").textContent = `${defaultPortion.amount} ml / ${defaultStrength.abv}%`;
     button.addEventListener("click", () => selectDrink(drink.id));
 
     els.drinkGrid.appendChild(fragment);
@@ -104,8 +235,13 @@ function renderDrinks() {
 
 function selectDrink(drinkId) {
   selectedDrink = drinks.find((drink) => drink.id === drinkId) || drinks[0];
-  els.amount.value = selectedDrink.amount || "";
-  els.abv.value = selectedDrink.abv || "";
+  const portion = selectedDrink.portions[0];
+  const strength = selectedDrink.strengths[0];
+
+  els.amount.value = portion.amount;
+  els.abv.value = strength.abv;
+  els.selectedDrinkImage.src = selectedDrink.image;
+  els.selectedDrinkName.textContent = selectedDrink.name;
 
   document.querySelectorAll(".drink-card").forEach((button) => {
     const active = button.dataset.drink === selectedDrink.id;
@@ -113,7 +249,46 @@ function selectDrink(drinkId) {
     button.setAttribute("aria-pressed", String(active));
   });
 
+  renderOptionButtons(els.portionOptions, selectedDrink.portions, "amount", portion.amount);
+  renderOptionButtons(els.strengthOptions, selectedDrink.strengths, "abv", strength.abv);
   updatePreview();
+}
+
+function renderOptionButtons(container, options, type, activeValue) {
+  container.innerHTML = "";
+
+  options.forEach((option) => {
+    const value = type === "amount" ? option.amount : option.abv;
+    const button = document.createElement("button");
+    button.className = "option-chip";
+    button.type = "button";
+    button.dataset.value = value;
+    button.innerHTML = `<strong>${escapeHtml(option.label)}</strong><span>${escapeHtml(option.detail)}</span>`;
+    button.classList.toggle("active", Number(value) === Number(activeValue));
+    button.addEventListener("click", () => {
+      if (type === "amount") {
+        els.amount.value = value;
+      } else {
+        els.abv.value = value;
+      }
+
+      setActiveOption(container, value);
+      updatePreview();
+    });
+    container.appendChild(button);
+  });
+}
+
+function setActiveOption(container, value) {
+  container.querySelectorAll(".option-chip").forEach((button) => {
+    button.classList.toggle("active", Number(button.dataset.value) === Number(value));
+  });
+}
+
+function markManualOption(container) {
+  container.querySelectorAll(".option-chip").forEach((button) => {
+    button.classList.toggle("active", false);
+  });
 }
 
 function addEntry(event) {
@@ -215,7 +390,7 @@ function renderHistory() {
     .map((entry) => `
       <div class="history-item">
         <div>
-          <strong>${escapeHtml(entry.drink)} · ${entry.units.toFixed(1)} vnt.</strong>
+          <strong>${escapeHtml(entry.drink)} · ${Number(entry.units || 0).toFixed(1)} vnt.</strong>
           <span>${entry.date} · ${entry.amount || "?"} ml · ${entry.abv || "?"}%</span>
         </div>
         <button class="secondary-button" type="button" data-delete="${entry.id}">Trinti</button>
@@ -276,6 +451,27 @@ function deleteEntry(id) {
   refresh();
 }
 
+function shiftDate(days) {
+  const date = isoToDate(els.date.value || todayIso());
+  date.setDate(date.getDate() + days);
+  els.date.value = dateToIso(date);
+  autoDate = els.date.value === todayIso();
+}
+
+function setToday() {
+  els.date.value = todayIso();
+  autoDate = true;
+}
+
+function scheduleDateSync() {
+  window.setInterval(() => {
+    if (autoDate && els.date.value !== todayIso()) {
+      els.date.value = todayIso();
+      refresh();
+    }
+  }, 60000);
+}
+
 async function share() {
   const text = `Alko Vienetai: ${entries.length} įrašų, šiandien ${els.todayUnits.textContent} vnt.`;
 
@@ -308,13 +504,25 @@ function sum(items, key) {
 }
 
 function todayIso() {
-  return new Date().toISOString().slice(0, 10);
+  return dateToIso(new Date());
 }
 
 function daysAgoIso(days) {
   const date = new Date();
   date.setDate(date.getDate() - days);
-  return date.toISOString().slice(0, 10);
+  return dateToIso(date);
+}
+
+function dateToIso(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function isoToDate(value) {
+  const [year, month, day] = value.split("-").map(Number);
+  return new Date(year, month - 1, day);
 }
 
 function getId() {
