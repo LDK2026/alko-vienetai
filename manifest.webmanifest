@@ -3,12 +3,15 @@
   "short_name": "Vienetai",
   "description": "Alkoholio vienetų skaičiuoklė ir vartojimo statistika",
   "lang": "lt",
+  "id": "/alko-vienetai/",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "orientation": "portrait",
-  "background_color": "#f6f7f2",
+  "display_override": ["window-controls-overlay", "standalone"],
   "theme_color": "#0f5132",
+  "background_color": "#f6f7f2",
+  "orientation": "portrait",
+  "categories": ["health", "lifestyle", "utilities"],
   "icons": [
     {
       "src": "assets/app-icon-192.png",
