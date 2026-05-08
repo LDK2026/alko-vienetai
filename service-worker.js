@@ -1,5 +1,4 @@
-const CACHE = "alko-vienetai-v1";
-
+const CACHE_NAME = "alko-vienetai-v2";
 const BASE = "/alko-vienetai/";
 
 const ASSETS = [
@@ -8,6 +7,8 @@ const ASSETS = [
   BASE + "styles.css",
   BASE + "app.js",
   BASE + "manifest.webmanifest",
+  BASE + "service-worker.js",
+  BASE + "offline.html",
 
   BASE + "assets/app-icon-192.png",
   BASE + "assets/app-icon-512.png",
@@ -23,17 +24,29 @@ const ASSETS = [
   BASE + "assets/other.svg"
 ];
 
-self.addEventListener("install", (e) => {
+self.addEventListener("install", (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
+  );
   self.skipWaiting();
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
 });
 
-self.addEventListener("activate", (e) => {
-  e.waitUntil(self.clients.claim());
+self.addEventListener("activate", (event) => {
+  event.waitUntil(self.clients.claim());
 });
 
-self.addEventListener("fetch", (e) => {
-  e.respondWith(
-    caches.match(e.request).then(r => r || fetch(e.request))
+self.addEventListener("fetch", (event) => {
+  event.respondWith(
+    fetch(event.request).then((response) => {
+      // atnaujinam cache „online-first“
+      const copy = response.clone();
+      caches.open(CACHE_NAME).then((cache) => {
+        cache.put(event.request, copy);
+      });
+      return response;
+    }).catch(() => {
+      return caches.match(event.request)
+        .then((cached) => cached || caches.match(BASE + "offline.html"));
+    })
   );
 });
