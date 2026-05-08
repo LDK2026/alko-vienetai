@@ -1,39 +1,39 @@
-const CACHE_NAME = "alko-vienetai-v1";
+const CACHE = "alko-vienetai-v1";
+
+const BASE = "/alko-vienetai/";
 
 const ASSETS = [
-  "./",
-  "./index.html",
-  "./styles.css",
-  "./app.js",
-  "./manifest.webmanifest",
-  "./assets/app-icon-192.png",
-  "./assets/app-icon-512.png",
-  "./assets/beer.svg",
-  "./assets/wine.svg",
-  "./assets/vodka.svg",
-  "./assets/champagne.svg",
-  "./assets/cider.svg",
-  "./assets/cocktail.svg",
-  "./assets/whiskey.svg",
-  "./assets/liqueur.svg",
-  "./assets/other.svg"
+  BASE,
+  BASE + "index.html",
+  BASE + "styles.css",
+  BASE + "app.js",
+  BASE + "manifest.webmanifest",
+
+  BASE + "assets/app-icon-192.png",
+  BASE + "assets/app-icon-512.png",
+
+  BASE + "assets/beer.svg",
+  BASE + "assets/wine.svg",
+  BASE + "assets/vodka.svg",
+  BASE + "assets/champagne.svg",
+  BASE + "assets/cider.svg",
+  BASE + "assets/cocktail.svg",
+  BASE + "assets/whiskey.svg",
+  BASE + "assets/liqueur.svg",
+  BASE + "assets/other.svg"
 ];
 
-self.addEventListener("install", (event) => {
+self.addEventListener("install", (e) => {
   self.skipWaiting();
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
-  );
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
 });
 
-self.addEventListener("activate", (event) => {
-  event.waitUntil(self.clients.claim());
+self.addEventListener("activate", (e) => {
+  e.waitUntil(self.clients.claim());
 });
 
-self.addEventListener("fetch", (event) => {
-  event.respondWith(
-    caches.match(event.request).then((cached) => {
-      return cached || fetch(event.request);
-    })
+self.addEventListener("fetch", (e) => {
+  e.respondWith(
+    caches.match(e.request).then(r => r || fetch(e.request))
   );
 });
