@@ -1,63 +1,65 @@
-const CACHE_NAME = "alko-vienetai-v3";
-const BASE = "/alko-vienetai/";
+const CACHE_NAME = "alko-vienetai-v4";
 
-const ASSETS = [
-  BASE,
-  BASE + "index.html",
-  BASE + "styles.css",
-  BASE + "app.js",
-  BASE + "manifest.webmanifest",
-  BASE + "offline.html",
-
-  BASE + "assets/app-icon-192.png",
-  BASE + "assets/app-icon-512.png"
+const APP_SHELL = [
+  "./",
+  "./index.html",
+  "./styles.css",
+  "./app.js",
+  "./manifest.webmanifest",
+  "./offline.html",
+  "./assets/app-icon-192.png",
+  "./assets/app-icon-512.png",
+  "./beer.svg",
+  "./wine.svg",
+  "./vodka.svg",
+  "./champagne.svg",
+  "./cider.svg",
+  "./whiskey.svg",
+  "./liqueur.svg",
+  "./other.svg"
 ];
 
-// INSTALL → cache static assets
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS);
-    })
+    caches.open(CACHE_NAME)
+      .then((cache) => cache.addAll(APP_SHELL))
+      .then(() => self.skipWaiting())
   );
-  self.skipWaiting();
 });
 
-// ACTIVATE → cleanup old caches
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(
-        keys.map((key) => {
-          if (key !== CACHE_NAME) {
-            return caches.delete(key);
-          }
-        })
-      )
-    )
+    caches.keys()
+      .then((keys) => Promise.all(keys.map((key) => {
+        if (key !== CACHE_NAME) {
+          return caches.delete(key);
+        }
+        return undefined;
+      })))
+      .then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
-// FETCH → CACHE FIRST (PWABuilder FRIENDLY)
 self.addEventListener("fetch", (event) => {
+  if (event.request.method !== "GET") {
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request).then((cached) => {
-      if (cached) return cached;
+      if (cached) {
+        return cached;
+      }
 
       return fetch(event.request)
         .then((response) => {
-          // cache new files dynamically
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, clone);
-          });
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          }
           return response;
         })
-        .catch(() => {
-          // offline fallback
-          return caches.match(BASE + "offline.html");
-        });
+        .catch(() => caches.match("./offline.html"))
     })
   );
 });

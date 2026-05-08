@@ -1,8 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" role="img" aria-label="Alko Vienetai">
-  <rect width="192" height="192" rx="42" fill="#0f6b43"/>
-  <path d="M57 42h78l-13 68c-3 18-15 29-26 29s-23-11-26-29z" fill="#ffffff" opacity=".94"/>
-  <path d="M70 79h52l-6 31c-3 12-11 20-20 20s-17-8-20-20z" fill="#e2bd56"/>
-  <path d="M96 139v24M70 164h52" stroke="#ffffff" stroke-width="10" stroke-linecap="round"/>
-  <circle cx="86" cy="94" r="4" fill="#fff2b0"/>
-  <circle cx="102" cy="109" r="4" fill="#fff2b0"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 118" role="img" aria-label="Degtinė">
+  <rect width="160" height="118" fill="#e8f0f3"/>
+  <rect x="66" y="15" width="28" height="20" rx="4" fill="#d8e8ef"/>
+  <rect x="58" y="31" width="44" height="73" rx="10" fill="#f9fdff"/>
+  <rect x="64" y="48" width="32" height="34" rx="4" fill="#b9d6e3"/>
+  <path d="M70 54h20M70 64h20M70 74h12" stroke="#315e70" stroke-width="3" stroke-linecap="round"/>
 </svg>

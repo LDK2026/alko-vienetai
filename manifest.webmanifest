@@ -3,8 +3,8 @@
   "short_name": "Vienetai",
   "description": "Alkoholio vienetų skaičiuoklė ir vartojimo statistika.",
   "id": "/alko-vienetai/",
-  "start_url": "/alko-vienetai/",
-  "scope": "/alko-vienetai/",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "display_override": ["standalone"],
   "background_color": "#f6f7f2",
@@ -13,12 +13,12 @@
   "categories": ["health", "utilities"],
   "icons": [
     {
-      "src": "/alko-vienetai/assets/app-icon-192.png",
+      "src": "assets/app-icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/alko-vienetai/assets/app-icon-512.png",
+      "src": "assets/app-icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
     }

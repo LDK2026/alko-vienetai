@@ -1,10 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 118" role="img" aria-label="Alus">
-  <rect width="160" height="118" fill="#f3ecd2"/>
-  <rect x="36" y="26" width="58" height="74" rx="8" fill="#e4a728"/>
-  <rect x="42" y="34" width="12" height="58" rx="4" fill="#f4c55e" opacity=".75"/>
-  <path d="M94 44h14c13 0 22 9 22 22s-9 22-22 22H94V76h14c6 0 10-4 10-10s-4-10-10-10H94z" fill="#b8791e"/>
-  <path d="M34 24c6-14 20-4 27-8 14-8 24 0 28 9 14-3 24 6 20 18H32c-10-4-8-17 2-19z" fill="#fff8df"/>
-  <circle cx="58" cy="48" r="3" fill="#ffe8a5"/>
-  <circle cx="73" cy="66" r="3" fill="#ffe8a5"/>
-  <circle cx="54" cy="81" r="3" fill="#ffe8a5"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 118" role="img" aria-label="Sidras">
+  <rect width="160" height="118" fill="#edf1dc"/>
+  <rect x="51" y="16" width="58" height="88" rx="12" fill="#9bbd44"/>
+  <rect x="58" y="28" width="44" height="61" rx="8" fill="#d8e69a"/>
+  <circle cx="80" cy="58" r="18" fill="#e7c54b"/>
+  <path d="M74 27c3-8 10-10 17-9-4 7-9 10-17 9z" fill="#4f8c3a"/>
 </svg>

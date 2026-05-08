@@ -1,7 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 118" role="img" aria-label="Kitas gerimas">
-  <rect width="160" height="118" fill="#e9ece8"/>
-  <rect x="36" y="32" width="38" height="68" rx="8" fill="#c4d0d1"/>
-  <rect x="86" y="22" width="38" height="78" rx="11" fill="#efe8d2"/>
-  <path d="M45 49h20M45 61h20M94 44h22M94 56h22" stroke="#5d696b" stroke-width="4" stroke-linecap="round"/>
-  <circle cx="105" cy="77" r="12" fill="#c58c32"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 118" role="img" aria-label="Likeris">
+  <rect width="160" height="118" fill="#f2e8df"/>
+  <rect x="62" y="18" width="36" height="18" rx="4" fill="#6a4b3c"/>
+  <rect x="54" y="34" width="52" height="70" rx="12" fill="#fff7ef"/>
+  <rect x="62" y="56" width="36" height="30" rx="6" fill="#8d4a27"/>
+  <path d="M67 43h26" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
 </svg>
