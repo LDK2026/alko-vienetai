@@ -198,6 +198,9 @@ function bindEvents() {
     markManualOption(els.strengthOptions);
     updatePreview();
   });
+  [els.amount, els.abv].forEach((input) => {
+    input.addEventListener("focus", () => keepFocusedFieldVisible(input));
+  });
   els.date.addEventListener("change", () => {
     autoDate = els.date.value === todayIso();
   });
@@ -290,14 +293,21 @@ function updateViewportMetrics() {
   const viewport = window.visualViewport;
   const height = viewport ? viewport.height : window.innerHeight;
   const offsetTop = viewport ? viewport.offsetTop : 0;
-  const bottomInset = Math.max(0, window.innerHeight - height - offsetTop);
   const isCompact = window.matchMedia("(max-width: 640px)").matches;
+  const keyboardOpen = Boolean(viewport && height < window.innerHeight * 0.78);
   const topGap = Math.max(isCompact ? 48 : 16, Math.round(offsetTop + 12));
-  const bottomGap = Math.max(isCompact ? 72 : 16, Math.round(bottomInset + 18));
+  const bottomGap = keyboardOpen ? 12 : (isCompact ? 72 : 16);
 
   document.documentElement.style.setProperty("--viewport-height", `${Math.round(height)}px`);
   document.documentElement.style.setProperty("--dialog-top-gap", `${topGap}px`);
   document.documentElement.style.setProperty("--dialog-bottom-gap", `${bottomGap}px`);
+}
+
+function keepFocusedFieldVisible(input) {
+  window.setTimeout(() => {
+    updateViewportMetrics();
+    input.scrollIntoView({ block: "center", behavior: "smooth" });
+  }, 120);
 }
 
 function closeDrinkDialog() {
