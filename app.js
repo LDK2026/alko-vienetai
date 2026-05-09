@@ -146,6 +146,8 @@ const els = {
   selectedDrinkName: document.querySelector("#selectedDrinkName"),
   portionOptions: document.querySelector("#portionOptions"),
   strengthOptions: document.querySelector("#strengthOptions"),
+  drinkDialog: document.querySelector("#drinkDialog"),
+  closeDrinkDialog: document.querySelector("#closeDrinkDialog"),
   previewText: document.querySelector("#previewText"),
   previewUnits: document.querySelector("#previewUnits"),
   form: document.querySelector("#drinkForm"),
@@ -201,6 +203,12 @@ function bindEvents() {
   els.prevDate.addEventListener("click", () => shiftDate(-1));
   els.nextDate.addEventListener("click", () => shiftDate(1));
   els.todayDate.addEventListener("click", setToday);
+  els.closeDrinkDialog.addEventListener("click", closeDrinkDialog);
+  els.drinkDialog.addEventListener("click", (event) => {
+    if (event.target === els.drinkDialog) {
+      closeDrinkDialog();
+    }
+  });
   els.saveSettings.addEventListener("click", saveSettings);
   els.clearHistory.addEventListener("click", clearHistory);
   els.shareButton.addEventListener("click", share);
@@ -227,13 +235,13 @@ function renderDrinks() {
     image.alt = "";
     button.querySelector("span").textContent = drink.name;
     button.querySelector("small").textContent = `${defaultPortion.amount} ml / ${defaultStrength.abv}%`;
-    button.addEventListener("click", () => selectDrink(drink.id));
+    button.addEventListener("click", () => selectDrink(drink.id, true));
 
     els.drinkGrid.appendChild(fragment);
   });
 }
 
-function selectDrink(drinkId) {
+function selectDrink(drinkId, shouldOpenDialog = false) {
   selectedDrink = drinks.find((drink) => drink.id === drinkId) || drinks[0];
   const portion = selectedDrink.portions[0];
   const strength = selectedDrink.strengths[0];
@@ -252,6 +260,30 @@ function selectDrink(drinkId) {
   renderOptionButtons(els.portionOptions, selectedDrink.portions, "amount", portion.amount);
   renderOptionButtons(els.strengthOptions, selectedDrink.strengths, "abv", strength.abv);
   updatePreview();
+
+  if (shouldOpenDialog) {
+    openDrinkDialog();
+  }
+}
+
+function openDrinkDialog() {
+  if (typeof els.drinkDialog.showModal === "function") {
+    if (!els.drinkDialog.open) {
+      els.drinkDialog.showModal();
+    }
+    return;
+  }
+
+  els.drinkDialog.setAttribute("open", "");
+}
+
+function closeDrinkDialog() {
+  if (typeof els.drinkDialog.close === "function" && els.drinkDialog.open) {
+    els.drinkDialog.close();
+    return;
+  }
+
+  els.drinkDialog.removeAttribute("open");
 }
 
 function renderOptionButtons(container, options, type, activeValue) {
@@ -315,6 +347,7 @@ function addEntry(event) {
 
   persistEntries();
   refresh();
+  closeDrinkDialog();
 }
 
 function refresh() {

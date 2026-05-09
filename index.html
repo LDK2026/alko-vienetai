@@ -75,14 +75,18 @@
 
           <div class="drink-grid" id="drinkGrid" aria-label="Gėrimų pasirinkimas"></div>
 
-          <section class="drink-detail-panel" id="drinkDetailPanel" aria-live="polite">
-            <div class="selected-drink">
+          <dialog class="drink-dialog" id="drinkDialog" aria-labelledby="selectedDrinkName">
+            <section class="drink-detail-panel" id="drinkDetailPanel" aria-live="polite">
+              <div class="dialog-header">
+                <div class="selected-drink">
               <img id="selectedDrinkImage" alt="">
               <div>
                 <p class="panel-label">Pasirinktas gėrimas</p>
                 <h2 id="selectedDrinkName">Alus</h2>
               </div>
-            </div>
+                </div>
+                <button class="dialog-close" id="closeDrinkDialog" type="button" aria-label="Uzdaryti">x</button>
+              </div>
 
             <div class="option-group">
               <div class="option-heading">
@@ -118,7 +122,8 @@
             </div>
 
             <button type="submit" class="primary-button">Pridėti įrašą</button>
-          </section>
+            </section>
+          </dialog>
         </form>
       </section>
 
