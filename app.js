@@ -179,6 +179,7 @@ function init() {
   renderDrinks();
   selectDrink(selectedDrink.id);
   bindEvents();
+  updateViewportMetrics();
   refresh();
   scheduleDateSync();
 
@@ -212,6 +213,12 @@ function bindEvents() {
   els.saveSettings.addEventListener("click", saveSettings);
   els.clearHistory.addEventListener("click", clearHistory);
   els.shareButton.addEventListener("click", share);
+  window.addEventListener("resize", updateViewportMetrics);
+
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", updateViewportMetrics);
+    window.visualViewport.addEventListener("scroll", updateViewportMetrics);
+  }
 
   els.tabs.forEach((tab) => {
     tab.addEventListener("click", () => activateTab(tab.dataset.tab));
@@ -267,6 +274,8 @@ function selectDrink(drinkId, shouldOpenDialog = false) {
 }
 
 function openDrinkDialog() {
+  updateViewportMetrics();
+
   if (typeof els.drinkDialog.showModal === "function") {
     if (!els.drinkDialog.open) {
       els.drinkDialog.showModal();
@@ -275,6 +284,20 @@ function openDrinkDialog() {
   }
 
   els.drinkDialog.setAttribute("open", "");
+}
+
+function updateViewportMetrics() {
+  const viewport = window.visualViewport;
+  const height = viewport ? viewport.height : window.innerHeight;
+  const offsetTop = viewport ? viewport.offsetTop : 0;
+  const bottomInset = Math.max(0, window.innerHeight - height - offsetTop);
+  const isCompact = window.matchMedia("(max-width: 640px)").matches;
+  const topGap = Math.max(isCompact ? 48 : 16, Math.round(offsetTop + 12));
+  const bottomGap = Math.max(isCompact ? 72 : 16, Math.round(bottomInset + 18));
+
+  document.documentElement.style.setProperty("--viewport-height", `${Math.round(height)}px`);
+  document.documentElement.style.setProperty("--dialog-top-gap", `${topGap}px`);
+  document.documentElement.style.setProperty("--dialog-bottom-gap", `${bottomGap}px`);
 }
 
 function closeDrinkDialog() {

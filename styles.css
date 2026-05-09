@@ -11,6 +11,9 @@
   --warning: #c77d1a;
   --danger: #b42318;
   --shadow: 0 18px 45px rgba(23, 33, 28, 0.12);
+  --viewport-height: 100dvh;
+  --dialog-top-gap: 16px;
+  --dialog-bottom-gap: 16px;
 }
 
 * {
@@ -281,13 +284,20 @@ button:focus-visible {
 }
 
 .drink-dialog {
+  position: fixed;
+  top: var(--dialog-top-gap);
+  right: auto;
+  bottom: var(--dialog-bottom-gap);
+  left: 50%;
+  transform: translateX(-50%);
   width: min(92vw, 520px);
-  max-height: calc(100dvh - 32px);
-  margin: auto;
+  max-height: calc(var(--viewport-height) - var(--dialog-top-gap) - var(--dialog-bottom-gap));
+  margin: 0;
   border: 0;
   padding: 0;
   color: var(--text);
   background: transparent;
+  overflow: hidden;
 }
 
 .drink-dialog::backdrop {
@@ -298,6 +308,9 @@ button:focus-visible {
 .drink-detail-panel {
   display: grid;
   gap: 14px;
+  max-height: calc(var(--viewport-height) - var(--dialog-top-gap) - var(--dialog-bottom-gap));
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 14px;
   box-shadow: var(--shadow);
 }
@@ -356,7 +369,7 @@ button:focus-visible {
 
 .option-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
 }
 
@@ -414,6 +427,13 @@ button:focus-visible {
 .primary-button {
   color: #fff;
   background: var(--accent);
+}
+
+.drink-detail-panel > .primary-button {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  box-shadow: 0 -10px 18px rgba(255, 255, 255, 0.92);
 }
 
 .primary-button:hover {
@@ -498,6 +518,11 @@ button:focus-visible {
 }
 
 @media (max-width: 640px) {
+  :root {
+    --dialog-top-gap: max(48px, env(safe-area-inset-top));
+    --dialog-bottom-gap: max(72px, env(safe-area-inset-bottom));
+  }
+
   .app-shell {
     padding: 16px;
   }
@@ -525,7 +550,47 @@ button:focus-visible {
     font-size: 0.82rem;
   }
 
+  .drink-detail-panel {
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .selected-drink {
+    padding: 8px;
+  }
+
+  .selected-drink img {
+    width: 54px;
+    height: 54px;
+  }
+
+  .option-heading span {
+    font-size: 0.8rem;
+  }
+
   .option-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .option-chip {
+    min-height: 54px;
+    padding: 6px 4px;
+  }
+
+  .option-chip strong {
+    font-size: 0.78rem;
+  }
+
+  .option-chip span {
+    font-size: 0.72rem;
+  }
+
+  .split {
+    gap: 8px;
+  }
+
+  .calculation-preview {
+    padding: 10px;
   }
 }
