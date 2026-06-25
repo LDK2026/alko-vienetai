@@ -33,20 +33,46 @@
     <main>
       <section class="hero-panel" aria-labelledby="todayTitle">
         <div class="hero-summary">
-          <div>
+          <div class="hero-stat-card">
             <p class="panel-label" id="todayTitle">Šiandien</p>
-            <strong id="todayUnits">0.0</strong>
-            <span>vienetų</span>
+            <div class="hero-stat-value">
+              <strong id="todayUnits">0.0</strong>
+              <span>vnt.</span>
+            </div>
+            <div class="mini-risk-meter" aria-hidden="true">
+              <div id="todayRiskFill"></div>
+            </div>
           </div>
-          <div>
+          <div class="hero-stat-card">
             <p class="panel-label">Šią savaitę</p>
-            <strong id="weekUnits">0.0</strong>
-            <span>vienetų</span>
+            <div class="hero-stat-value">
+              <strong id="weekUnits">0.0</strong>
+              <span>vnt.</span>
+            </div>
+            <div class="mini-risk-meter" aria-hidden="true">
+              <div id="weekRiskFill"></div>
+            </div>
           </div>
-        </div>
-
-        <div class="risk-meter" aria-hidden="true">
-          <div id="riskFill"></div>
+          <div class="hero-stat-card">
+            <p class="panel-label">Šį mėnesį</p>
+            <div class="hero-stat-value">
+              <strong id="monthUnits">0.0</strong>
+              <span>vnt.</span>
+            </div>
+            <div class="mini-risk-meter" aria-hidden="true">
+              <div id="monthRiskFill"></div>
+            </div>
+          </div>
+          <div class="hero-stat-card">
+            <p class="panel-label">Šiais metais</p>
+            <div class="hero-stat-value">
+              <strong id="yearUnits">0.0</strong>
+              <span>vnt.</span>
+            </div>
+            <div class="mini-risk-meter" aria-hidden="true">
+              <div id="yearRiskFill"></div>
+            </div>
+          </div>
         </div>
 
         <p id="riskText" class="muted">Įrašyk pirmą gėrimą.</p>
@@ -187,8 +213,42 @@
             <input type="number" id="weeklyLimitInput" min="0.1" step="0.1" inputmode="decimal">
           </label>
 
+          <label>
+            Mėnesio riba, vnt.
+            <input type="number" id="monthlyLimitInput" min="0.1" step="0.1" inputmode="decimal">
+          </label>
+
+          <label>
+            Metų riba, vnt.
+            <input type="number" id="yearlyLimitInput" min="0.1" step="0.1" inputmode="decimal">
+          </label>
+
           <button type="button" id="saveSettingsButton" class="primary-button">Išsaugoti</button>
           <p class="muted small">Ribos naudojamos tik tavo įrašų palyginimui šiame įrenginyje.</p>
+
+          <div class="data-tools">
+            <h2>Duomenys</h2>
+            <div class="data-actions">
+              <button type="button" id="exportDataButton" class="secondary-button">Eksportuoti</button>
+              <label class="secondary-button file-button">
+                Importuoti
+                <input type="file" id="importDataInput" accept="application/json,.json">
+              </label>
+            </div>
+            <details class="backup-details">
+              <summary>Tekstinė kopija</summary>
+              <label>
+                Eksportas
+                <textarea id="backupText" readonly rows="4"></textarea>
+              </label>
+              <label>
+                Importas
+                <textarea id="importTextInput" rows="4"></textarea>
+              </label>
+              <button type="button" id="importTextButton" class="secondary-button">Importuoti tekstą</button>
+            </details>
+            <p id="dataStatus" class="muted small" aria-live="polite"></p>
+          </div>
         </div>
       </section>
     </main>

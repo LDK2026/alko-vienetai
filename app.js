@@ -2,10 +2,13 @@ const GRAMS_PER_UNIT = 10;
 const ETHANOL_DENSITY = 0.789;
 const STORAGE_KEY = "alko.entries";
 const SETTINGS_KEY = "alko.settings";
+const EXPORT_VERSION = 1;
 
 const DEFAULT_SETTINGS = {
   daily: 2,
-  weekly: 14
+  weekly: 14,
+  monthly: 60,
+  yearly: 730
 };
 
 const STATS_PERIOD_LABELS = {
@@ -190,7 +193,12 @@ const els = {
   screens: document.querySelectorAll(".screen"),
   todayUnits: document.querySelector("#todayUnits"),
   weekUnits: document.querySelector("#weekUnits"),
-  riskFill: document.querySelector("#riskFill"),
+  monthUnits: document.querySelector("#monthUnits"),
+  yearUnits: document.querySelector("#yearUnits"),
+  todayRiskFill: document.querySelector("#todayRiskFill"),
+  weekRiskFill: document.querySelector("#weekRiskFill"),
+  monthRiskFill: document.querySelector("#monthRiskFill"),
+  yearRiskFill: document.querySelector("#yearRiskFill"),
   riskText: document.querySelector("#riskText"),
   statsPeriodButtons: document.querySelectorAll("[data-stats-period]"),
   statsPrev: document.querySelector("#statsPrevButton"),
@@ -206,7 +214,15 @@ const els = {
   clearHistory: document.querySelector("#clearHistoryButton"),
   dailyLimit: document.querySelector("#dailyLimitInput"),
   weeklyLimit: document.querySelector("#weeklyLimitInput"),
+  monthlyLimit: document.querySelector("#monthlyLimitInput"),
+  yearlyLimit: document.querySelector("#yearlyLimitInput"),
   saveSettings: document.querySelector("#saveSettingsButton"),
+  exportData: document.querySelector("#exportDataButton"),
+  importData: document.querySelector("#importDataInput"),
+  backupText: document.querySelector("#backupText"),
+  importText: document.querySelector("#importTextInput"),
+  importTextButton: document.querySelector("#importTextButton"),
+  dataStatus: document.querySelector("#dataStatus"),
   shareButton: document.querySelector("#shareButton")
 };
 
@@ -216,6 +232,8 @@ function init() {
   els.date.value = todayIso();
   els.dailyLimit.value = settings.daily;
   els.weeklyLimit.value = settings.weekly;
+  els.monthlyLimit.value = settings.monthly;
+  els.yearlyLimit.value = settings.yearly;
 
   renderDrinks();
   selectDrink(selectedDrink.id);
@@ -256,6 +274,9 @@ function bindEvents() {
   });
   els.saveSettings.addEventListener("click", saveSettings);
   els.clearHistory.addEventListener("click", clearHistory);
+  els.exportData.addEventListener("click", exportData);
+  els.importData.addEventListener("change", importData);
+  els.importTextButton.addEventListener("click", importTextData);
   els.shareButton.addEventListener("click", share);
   window.addEventListener("resize", updateViewportMetrics);
 
@@ -433,47 +454,71 @@ function addEntry(event) {
 
 function refresh() {
   const today = todayIso();
-  const weekStart = daysAgoIso(6);
+  const currentDate = new Date();
+  const weekRange = getPeriodRange("week", currentDate);
+  const monthRange = getPeriodRange("month", currentDate);
+  const yearRange = getPeriodRange("year", currentDate);
   const todayEntries = entries.filter((entry) => entry.date === today);
-  const weekEntries = entries.filter((entry) => entry.date >= weekStart && entry.date <= today);
+  const weekEntries = filterEntriesByRange(weekRange);
+  const monthEntries = filterEntriesByRange(monthRange);
+  const yearEntries = filterEntriesByRange(yearRange);
   const todayUnits = sum(todayEntries, "units");
   const weekUnits = sum(weekEntries, "units");
+  const monthUnits = sum(monthEntries, "units");
+  const yearUnits = sum(yearEntries, "units");
   const statsRange = getStatsRange();
-  const statsEntries = entries.filter((entry) => entry.date >= statsRange.startIso && entry.date <= statsRange.endIso);
+  const statsEntries = filterEntriesByRange(statsRange);
   const statsUnits = sum(statsEntries, "units");
 
   els.todayUnits.textContent = todayUnits.toFixed(1);
   els.weekUnits.textContent = weekUnits.toFixed(1);
+  els.monthUnits.textContent = monthUnits.toFixed(1);
+  els.yearUnits.textContent = yearUnits.toFixed(1);
   els.periodUnits.textContent = statsUnits.toFixed(1);
   els.periodGrams.textContent = `${Math.round(sum(statsEntries, "grams"))} g`;
   els.periodDays.textContent = new Set(statsEntries.map((entry) => entry.date)).size;
   renderStatsControls(statsRange);
 
-  renderRisk(todayUnits, weekUnits);
+  renderRisk({ today: todayUnits, week: weekUnits, month: monthUnits, year: yearUnits });
   renderBreakdown(statsEntries, STATS_EMPTY_TEXT[statsPeriodType]);
   renderHistory();
 }
 
-function renderRisk(todayUnits, weekUnits) {
-  const dailyLimit = Number(settings.daily) || DEFAULT_SETTINGS.daily;
-  const weeklyLimit = Number(settings.weekly) || DEFAULT_SETTINGS.weekly;
-  const dailyRatio = dailyLimit ? todayUnits / dailyLimit : 0;
-  const weeklyRatio = weeklyLimit ? weekUnits / weeklyLimit : 0;
-  const ratio = Math.max(dailyRatio, weeklyRatio);
-  const percent = Math.min(100, Math.round(ratio * 100));
+function renderRisk(periodUnits) {
+  const limits = {
+    today: Number(settings.daily) || DEFAULT_SETTINGS.daily,
+    week: Number(settings.weekly) || DEFAULT_SETTINGS.weekly,
+    month: Number(settings.monthly) || DEFAULT_SETTINGS.monthly,
+    year: Number(settings.yearly) || DEFAULT_SETTINGS.yearly
+  };
 
-  els.riskFill.style.width = `${percent}%`;
-  els.riskFill.style.backgroundColor = ratio >= 1 ? "#b42318" : ratio >= 0.75 ? "#c77d1a" : "#0f5132";
+  setRiskMeter(els.todayRiskFill, periodUnits.today, limits.today);
+  setRiskMeter(els.weekRiskFill, periodUnits.week, limits.week);
+  setRiskMeter(els.monthRiskFill, periodUnits.month, limits.month);
+  setRiskMeter(els.yearRiskFill, periodUnits.year, limits.year);
+
+  const reachedLimit = Object.keys(limits).some((key) => {
+    const units = Number(periodUnits[key]) || 0;
+    return units >= limits[key];
+  });
 
   if (!entries.length) {
     els.riskText.textContent = "Įrašyk pirmą gėrimą.";
-  } else if (ratio >= 1) {
-    els.riskText.textContent = "Pasiekta arba viršyta tavo pasirinkta riba.";
-  } else if (ratio >= 0.75) {
-    els.riskText.textContent = "Artėji prie savo pasirinktos ribos.";
+  } else if (reachedLimit) {
+    els.riskText.textContent = "Pasiekta arba viršyta bent viena pasirinkta riba.";
   } else {
-    els.riskText.textContent = "Pagal tavo nustatytas ribas dar yra atsargos.";
+    els.riskText.textContent = "Pasirinktos ribos dar nepasiektos.";
   }
+}
+
+function setRiskMeter(element, units, limit) {
+  const value = Number(units) || 0;
+  const max = Number(limit) || 0;
+  const ratio = max > 0 ? value / max : 0;
+  const percent = Math.min(100, Math.round(ratio * 100));
+
+  element.style.width = `${percent}%`;
+  element.style.backgroundColor = ratio >= 1 ? "#b42318" : "#0f5132";
 }
 
 function renderBreakdown(sourceEntries, emptyText = "Šiuo laikotarpiu įrašų nėra.") {
@@ -575,16 +620,20 @@ function renderStatsControls(range) {
 }
 
 function getStatsRange() {
-  const anchor = cloneDate(statsAnchorDate);
+  return getPeriodRange(statsPeriodType, statsAnchorDate);
+}
+
+function getPeriodRange(periodType, anchorDate) {
+  const anchor = cloneDate(anchorDate);
   let start;
   let end;
   let label;
 
-  if (statsPeriodType === "week") {
+  if (periodType === "week") {
     start = startOfWeek(anchor);
     end = addDays(start, 6);
     label = `${dateToIso(start)} - ${dateToIso(end)}`;
-  } else if (statsPeriodType === "month") {
+  } else if (periodType === "month") {
     start = new Date(anchor.getFullYear(), anchor.getMonth(), 1);
     end = new Date(anchor.getFullYear(), anchor.getMonth() + 1, 0);
     label = `${anchor.getFullYear()} ${MONTH_NAMES[anchor.getMonth()]}`;
@@ -601,6 +650,10 @@ function getStatsRange() {
   };
 }
 
+function filterEntriesByRange(range) {
+  return entries.filter((entry) => entry.date >= range.startIso && entry.date <= range.endIso);
+}
+
 function updatePreview() {
   const amount = Number(els.amount.value) || 0;
   const abv = Number(els.abv.value) || 0;
@@ -614,11 +667,230 @@ function updatePreview() {
 function saveSettings() {
   settings = {
     daily: Number(els.dailyLimit.value) || DEFAULT_SETTINGS.daily,
-    weekly: Number(els.weeklyLimit.value) || DEFAULT_SETTINGS.weekly
+    weekly: Number(els.weeklyLimit.value) || DEFAULT_SETTINGS.weekly,
+    monthly: Number(els.monthlyLimit.value) || DEFAULT_SETTINGS.monthly,
+    yearly: Number(els.yearlyLimit.value) || DEFAULT_SETTINGS.yearly
   };
 
   localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
   refresh();
+}
+
+async function exportData() {
+  const exportedAt = new Date().toISOString();
+  const payload = {
+    app: "Alko Vienetai",
+    version: EXPORT_VERSION,
+    exportedAt,
+    entries,
+    settings,
+    storage: {
+      [STORAGE_KEY]: entries,
+      [SETTINGS_KEY]: settings
+    }
+  };
+  const filename = `alko-vienetai-${todayIso()}.json`;
+  const text = JSON.stringify(payload, null, 2);
+  const blob = new Blob([text], { type: "application/json" });
+  const file = typeof File !== "undefined" ? new File([blob], filename, { type: "application/json" }) : null;
+  els.backupText.value = text;
+
+  try {
+    await navigator.clipboard?.writeText(text);
+  } catch {
+    // Clipboard is a convenience fallback only.
+  }
+
+  try {
+    if (file && navigator.canShare?.({ files: [file] })) {
+      await navigator.share({
+        files: [file],
+        title: "Alko Vienetai",
+        text: "Alko Vienetai duomenų kopija"
+      });
+      showDataStatus(`Eksportuota ${entries.length} įrašų.`);
+      return;
+    }
+  } catch (error) {
+    if (error?.name === "AbortError") {
+      return;
+    }
+  }
+
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+  showDataStatus(`Eksportuota ${entries.length} įrašų.`);
+}
+
+async function importData(event) {
+  const file = event.target.files?.[0];
+  if (!file) {
+    return;
+  }
+
+  try {
+    await importPayload(JSON.parse(await file.text()));
+  } catch (error) {
+    showDataStatus("Importuoti nepavyko.");
+    alert(error?.message || "Nepavyko importuoti duomenų failo.");
+  } finally {
+    event.target.value = "";
+  }
+}
+
+async function importTextData() {
+  const text = els.importText.value.trim();
+  if (!text) {
+    showDataStatus("Įklijuok duomenų kopiją.");
+    return;
+  }
+
+  try {
+    await importPayload(JSON.parse(text));
+    els.importText.value = "";
+  } catch (error) {
+    showDataStatus("Importuoti nepavyko.");
+    alert(error?.message || "Nepavyko importuoti įklijuotos kopijos.");
+  }
+}
+
+async function importPayload(payload) {
+  const importedEntries = getImportEntries(payload);
+  const importedSettings = getImportSettings(payload);
+
+  if (!importedEntries.length && !importedSettings) {
+    throw new Error("Faile nerasta Alko Vienetai duomenų.");
+  }
+
+  if (!confirm(`Importuoti ${importedEntries.length} įrašų? Esami įrašai bus išsaugoti ir sujungti.`)) {
+    return;
+  }
+
+  const beforeCount = entries.length;
+  entries = mergeEntries(entries, importedEntries);
+  persistEntries();
+
+  if (importedSettings) {
+    settings = normalizeSettings(importedSettings);
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+    updateSettingsInputs();
+  }
+
+  refresh();
+  showDataStatus(`Importuota ${entries.length - beforeCount} naujų įrašų.`);
+}
+
+function getImportEntries(payload) {
+  const rawEntries = Array.isArray(payload?.entries)
+    ? payload.entries
+    : Array.isArray(payload?.storage?.[STORAGE_KEY])
+      ? payload.storage[STORAGE_KEY]
+      : [];
+
+  return rawEntries.map(normalizeEntry).filter(Boolean);
+}
+
+function getImportSettings(payload) {
+  const rawSettings = payload?.settings || payload?.storage?.[SETTINGS_KEY];
+  return rawSettings && typeof rawSettings === "object" ? rawSettings : null;
+}
+
+function normalizeEntry(entry) {
+  if (!entry || typeof entry !== "object") {
+    return null;
+  }
+
+  const date = String(entry.date || "");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return null;
+  }
+
+  const amount = Math.max(0, Number(entry.amount) || 0);
+  const abv = Math.min(96, Math.max(0, Number(entry.abv) || 0));
+  const rawGrams = Number(entry.grams);
+  const grams = Number.isFinite(rawGrams) && rawGrams >= 0 ? rawGrams : calculateGrams(amount, abv);
+  const rawUnits = Number(entry.units);
+  const units = Number.isFinite(rawUnits) && rawUnits >= 0 ? rawUnits : grams / GRAMS_PER_UNIT;
+
+  if (!Number.isFinite(units) || units < 0) {
+    return null;
+  }
+
+  return {
+    id: entry.id ? String(entry.id) : getId(),
+    date,
+    drinkId: String(entry.drinkId || "other"),
+    drink: String(entry.drink || "Kita"),
+    amount,
+    abv,
+    grams,
+    units
+  };
+}
+
+function mergeEntries(currentEntries, importedEntries) {
+  const seen = new Set();
+  currentEntries.forEach((entry) => {
+    seen.add(`id:${entry.id}`);
+    seen.add(entryContentKey(entry));
+  });
+
+  const merged = [...currentEntries];
+  importedEntries.forEach((entry) => {
+    const idKey = `id:${entry.id}`;
+    const contentKey = entryContentKey(entry);
+    if (seen.has(idKey) || seen.has(contentKey)) {
+      return;
+    }
+
+    merged.push(entry);
+    seen.add(idKey);
+    seen.add(contentKey);
+  });
+
+  return merged.sort((a, b) => String(b.date).localeCompare(String(a.date)));
+}
+
+function entryContentKey(entry) {
+  return [
+    "entry",
+    entry.date,
+    entry.drinkId,
+    Number(entry.amount || 0).toFixed(2),
+    Number(entry.abv || 0).toFixed(2),
+    Number(entry.units || 0).toFixed(4)
+  ].join("|");
+}
+
+function normalizeSettings(rawSettings) {
+  return {
+    daily: positiveNumber(rawSettings.daily, settings.daily || DEFAULT_SETTINGS.daily),
+    weekly: positiveNumber(rawSettings.weekly, settings.weekly || DEFAULT_SETTINGS.weekly),
+    monthly: positiveNumber(rawSettings.monthly, settings.monthly || DEFAULT_SETTINGS.monthly),
+    yearly: positiveNumber(rawSettings.yearly, settings.yearly || DEFAULT_SETTINGS.yearly)
+  };
+}
+
+function positiveNumber(value, fallback) {
+  const number = Number(value);
+  return Number.isFinite(number) && number > 0 ? number : fallback;
+}
+
+function updateSettingsInputs() {
+  els.dailyLimit.value = settings.daily;
+  els.weeklyLimit.value = settings.weekly;
+  els.monthlyLimit.value = settings.monthly;
+  els.yearlyLimit.value = settings.yearly;
+}
+
+function showDataStatus(message) {
+  els.dataStatus.textContent = message;
 }
 
 function clearHistory() {
