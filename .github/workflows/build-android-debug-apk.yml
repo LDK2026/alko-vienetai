@@ -1,19 +1,30 @@
-name: Build Android Debug APK
+name: Build Android Signed APK
 
 on:
   workflow_dispatch:
+    inputs:
+      version_code:
+        description: "Android versionCode. Increase this for every installed update."
+        required: true
+        default: "2"
+      version_name:
+        description: "Android versionName shown to users."
+        required: true
+        default: "1.1.0"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
-    name: Build APK
+    name: Build signed APK
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -32,6 +43,29 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: "8.9"
+
+      - name: Prepare stable sideload signing key
+        run: |
+          set -euo pipefail
+          mkdir -p android-signing
+          if [ ! -f android-signing/alko-vienetai-sideload.jks ]; then
+            keytool -genkeypair \
+              -v \
+              -keystore android-signing/alko-vienetai-sideload.jks \
+              -storepass "AlkoVienetai2026!" \
+              -alias "alko-vienetai" \
+              -keypass "AlkoVienetai2026!" \
+              -keyalg RSA \
+              -keysize 2048 \
+              -validity 10000 \
+              -dname "CN=Alko Vienetai,O=LDK2026,C=LT"
+
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add android-signing/alko-vienetai-sideload.jks
+            git commit -m "Add stable sideload signing key"
+            git push
+          fi
 
       - name: Generate Android WebView project
         run: |
@@ -85,8 +119,24 @@ jobs:
                   applicationId "eu.ldk2026.alkovienetai"
                   minSdk 23
                   targetSdk 35
-                  versionCode 1
-                  versionName "1.0.0"
+                  versionCode ${{ inputs.version_code }}
+                  versionName "${{ inputs.version_name }}"
+              }
+
+              signingConfigs {
+                  release {
+                      storeFile file("../../android-signing/alko-vienetai-sideload.jks")
+                      storePassword "AlkoVienetai2026!"
+                      keyAlias "alko-vienetai"
+                      keyPassword "AlkoVienetai2026!"
+                  }
+              }
+
+              buildTypes {
+                  release {
+                      signingConfig signingConfigs.release
+                      minifyEnabled false
+                  }
               }
           }
           EOF
@@ -208,26 +258,22 @@ jobs:
           </resources>
           EOF
 
-      - name: Show generated files
-        run: |
-          find android-app -maxdepth 8 -type f | sort
-
       - name: Show Gradle projects
         working-directory: android-app
         run: gradle --no-daemon projects
 
-      - name: Build debug APK
+      - name: Build signed APK
         working-directory: android-app
-        run: gradle --no-daemon :app:assembleDebug
+        run: gradle --no-daemon :app:assembleRelease
 
       - name: Collect APK
         run: |
           mkdir -p apk-output
-          cp android-app/app/build/outputs/apk/debug/app-debug.apk apk-output/alko-vienetai-debug.apk
+          cp android-app/app/build/outputs/apk/release/app-release.apk apk-output/alko-vienetai-signed.apk
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: alko-vienetai-debug-apk
-          path: apk-output/alko-vienetai-debug.apk
+          name: alko-vienetai-signed-apk
+          path: apk-output/alko-vienetai-signed.apk
           if-no-files-found: error
