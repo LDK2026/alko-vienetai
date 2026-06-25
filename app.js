@@ -8,6 +8,39 @@ const DEFAULT_SETTINGS = {
   weekly: 14
 };
 
+const STATS_PERIOD_LABELS = {
+  week: "Savaitės vienetai",
+  month: "Mėnesio vienetai",
+  year: "Metų vienetai"
+};
+
+const STATS_CURRENT_LABELS = {
+  week: "Ši savaitė",
+  month: "Šis mėnuo",
+  year: "Šie metai"
+};
+
+const STATS_EMPTY_TEXT = {
+  week: "Pasirinktą savaitę įrašų nėra.",
+  month: "Pasirinktą mėnesį įrašų nėra.",
+  year: "Pasirinktais metais įrašų nėra."
+};
+
+const MONTH_NAMES = [
+  "sausis",
+  "vasaris",
+  "kovas",
+  "balandis",
+  "gegužė",
+  "birželis",
+  "liepa",
+  "rugpjūtis",
+  "rugsėjis",
+  "spalis",
+  "lapkritis",
+  "gruodis"
+];
+
 const drinks = [
   {
     id: "beer",
@@ -133,6 +166,8 @@ let selectedDrink = drinks[0];
 let autoDate = true;
 let entries = readJson(STORAGE_KEY, []);
 let settings = { ...DEFAULT_SETTINGS, ...readJson(SETTINGS_KEY, {}) };
+let statsPeriodType = "week";
+let statsAnchorDate = new Date();
 
 const els = {
   date: document.querySelector("#dateInput"),
@@ -157,6 +192,12 @@ const els = {
   weekUnits: document.querySelector("#weekUnits"),
   riskFill: document.querySelector("#riskFill"),
   riskText: document.querySelector("#riskText"),
+  statsPeriodButtons: document.querySelectorAll("[data-stats-period]"),
+  statsPrev: document.querySelector("#statsPrevButton"),
+  statsNext: document.querySelector("#statsNextButton"),
+  statsCurrent: document.querySelector("#statsCurrentButton"),
+  statsPeriodRange: document.querySelector("#statsPeriodRange"),
+  periodUnitsLabel: document.querySelector("#periodUnitsLabel"),
   periodUnits: document.querySelector("#periodUnits"),
   periodGrams: document.querySelector("#periodGrams"),
   periodDays: document.querySelector("#periodDays"),
@@ -226,6 +267,13 @@ function bindEvents() {
   els.tabs.forEach((tab) => {
     tab.addEventListener("click", () => activateTab(tab.dataset.tab));
   });
+
+  els.statsPeriodButtons.forEach((button) => {
+    button.addEventListener("click", () => setStatsPeriod(button.dataset.statsPeriod));
+  });
+  els.statsPrev.addEventListener("click", () => shiftStatsPeriod(-1));
+  els.statsNext.addEventListener("click", () => shiftStatsPeriod(1));
+  els.statsCurrent.addEventListener("click", setCurrentStatsPeriod);
 }
 
 function renderDrinks() {
@@ -390,15 +438,19 @@ function refresh() {
   const weekEntries = entries.filter((entry) => entry.date >= weekStart && entry.date <= today);
   const todayUnits = sum(todayEntries, "units");
   const weekUnits = sum(weekEntries, "units");
+  const statsRange = getStatsRange();
+  const statsEntries = entries.filter((entry) => entry.date >= statsRange.startIso && entry.date <= statsRange.endIso);
+  const statsUnits = sum(statsEntries, "units");
 
   els.todayUnits.textContent = todayUnits.toFixed(1);
   els.weekUnits.textContent = weekUnits.toFixed(1);
-  els.periodUnits.textContent = weekUnits.toFixed(1);
-  els.periodGrams.textContent = `${Math.round(sum(weekEntries, "grams"))} g`;
-  els.periodDays.textContent = new Set(weekEntries.map((entry) => entry.date)).size;
+  els.periodUnits.textContent = statsUnits.toFixed(1);
+  els.periodGrams.textContent = `${Math.round(sum(statsEntries, "grams"))} g`;
+  els.periodDays.textContent = new Set(statsEntries.map((entry) => entry.date)).size;
+  renderStatsControls(statsRange);
 
   renderRisk(todayUnits, weekUnits);
-  renderBreakdown(weekEntries);
+  renderBreakdown(statsEntries, STATS_EMPTY_TEXT[statsPeriodType]);
   renderHistory();
 }
 
@@ -424,9 +476,9 @@ function renderRisk(todayUnits, weekUnits) {
   }
 }
 
-function renderBreakdown(sourceEntries) {
+function renderBreakdown(sourceEntries, emptyText = "Šiuo laikotarpiu įrašų nėra.") {
   if (!sourceEntries.length) {
-    els.drinkBreakdown.innerHTML = '<div class="empty-state">Per paskutines 7 dienas įrašų nėra.</div>';
+    els.drinkBreakdown.innerHTML = `<div class="empty-state">${escapeHtml(emptyText)}</div>`;
     return;
   }
 
@@ -479,6 +531,74 @@ function activateTab(tabName) {
     screen.classList.toggle("active", active);
     screen.hidden = !active;
   });
+}
+
+function setStatsPeriod(periodType) {
+  if (!STATS_PERIOD_LABELS[periodType]) {
+    return;
+  }
+
+  statsPeriodType = periodType;
+  refresh();
+}
+
+function shiftStatsPeriod(direction) {
+  const date = cloneDate(statsAnchorDate);
+
+  if (statsPeriodType === "week") {
+    date.setDate(date.getDate() + direction * 7);
+  } else if (statsPeriodType === "month") {
+    date.setMonth(date.getMonth() + direction);
+  } else {
+    date.setFullYear(date.getFullYear() + direction);
+  }
+
+  statsAnchorDate = date;
+  refresh();
+}
+
+function setCurrentStatsPeriod() {
+  statsAnchorDate = new Date();
+  refresh();
+}
+
+function renderStatsControls(range) {
+  els.periodUnitsLabel.textContent = STATS_PERIOD_LABELS[statsPeriodType];
+  els.statsPeriodRange.textContent = range.label;
+  els.statsCurrent.textContent = STATS_CURRENT_LABELS[statsPeriodType];
+
+  els.statsPeriodButtons.forEach((button) => {
+    const active = button.dataset.statsPeriod === statsPeriodType;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+}
+
+function getStatsRange() {
+  const anchor = cloneDate(statsAnchorDate);
+  let start;
+  let end;
+  let label;
+
+  if (statsPeriodType === "week") {
+    start = startOfWeek(anchor);
+    end = addDays(start, 6);
+    label = `${dateToIso(start)} - ${dateToIso(end)}`;
+  } else if (statsPeriodType === "month") {
+    start = new Date(anchor.getFullYear(), anchor.getMonth(), 1);
+    end = new Date(anchor.getFullYear(), anchor.getMonth() + 1, 0);
+    label = `${anchor.getFullYear()} ${MONTH_NAMES[anchor.getMonth()]}`;
+  } else {
+    start = new Date(anchor.getFullYear(), 0, 1);
+    end = new Date(anchor.getFullYear(), 11, 31);
+    label = `${anchor.getFullYear()} metai`;
+  }
+
+  return {
+    startIso: dateToIso(start),
+    endIso: dateToIso(end),
+    label
+  };
 }
 
 function updatePreview() {
@@ -577,6 +697,23 @@ function daysAgoIso(days) {
   const date = new Date();
   date.setDate(date.getDate() - days);
   return dateToIso(date);
+}
+
+function cloneDate(date) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+function startOfWeek(date) {
+  const result = cloneDate(date);
+  const mondayOffset = (result.getDay() + 6) % 7;
+  result.setDate(result.getDate() - mondayOffset);
+  return result;
+}
+
+function addDays(date, days) {
+  const result = cloneDate(date);
+  result.setDate(result.getDate() + days);
+  return result;
 }
 
 function dateToIso(date) {

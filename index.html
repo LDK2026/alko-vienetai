@@ -128,9 +128,30 @@
       </section>
 
       <section class="screen" id="statsScreen" hidden>
+        <div class="stats-panel">
+          <div class="stats-heading">
+            <div>
+              <h2>Statistika</h2>
+              <p class="muted small" id="statsPeriodRange">Ši savaitė</p>
+            </div>
+          </div>
+
+          <div class="stats-period-tabs" aria-label="Statistikos laikotarpis">
+            <button class="stats-period-button active" type="button" data-stats-period="week" aria-pressed="true">Savaitė</button>
+            <button class="stats-period-button" type="button" data-stats-period="month" aria-pressed="false">Mėnuo</button>
+            <button class="stats-period-button" type="button" data-stats-period="year" aria-pressed="false">Metai</button>
+          </div>
+
+          <div class="date-actions stats-date-actions">
+            <button class="secondary-button icon-step" type="button" id="statsPrevButton" aria-label="Ankstesnis laikotarpis">‹</button>
+            <button class="secondary-button" type="button" id="statsCurrentButton">Dabar</button>
+            <button class="secondary-button icon-step" type="button" id="statsNextButton" aria-label="Kitas laikotarpis">›</button>
+          </div>
+        </div>
+
         <div class="summary-grid">
           <div>
-            <span>Per 7 dienas</span>
+            <span id="periodUnitsLabel">Savaitės vienetai</span>
             <strong id="periodUnits">0.0</strong>
           </div>
           <div>

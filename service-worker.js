@@ -1,4 +1,4 @@
-const CACHE_NAME = "alko-vienetai-v8";
+const CACHE_NAME = "alko-vienetai-v9";
 
 const APP_SHELL = [
   "./",
